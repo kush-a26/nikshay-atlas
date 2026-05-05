@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where the Wind Dies — Process Document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:   #F5F0E8;
+  --cream-d: #EDE7D9;
+  --ink:     #1A1814;
+  --ink-m:   #3D3830;
+  --ink-l:   #7A7268;
+  --ora:     #C85A1E;
+  --ora-l:   #D97030;
+  --ora-p:   #F5E8DF;
+  --red-d:   #8B2E0F;
+  --bd:      rgba(26,24,20,.1);
+  --bd-s:    rgba(26,24,20,.22);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--cream);color:var(--ink);
+  font-family:'EB Garamond',Georgia,serif;
+  font-size:18px;line-height:1.75;overflow-x:hidden;
+}
+
+/* ── COVER ── */
+.cover{
+  min-height:100vh;display:flex;flex-direction:column;
+  justify-content:flex-end;padding:60px 80px;
+  border-bottom:1px solid var(--bd-s);position:relative;
+}
+.c-eyebrow{
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--ink-l);
+  margin-bottom:28px;display:flex;align-items:center;gap:14px;
+}
+.c-eyebrow::before{content:'';width:28px;height:1px;background:var(--ora)}
+.c-title{
+  font-family:'Syne',sans-serif;
+  font-size:clamp(52px,8vw,112px);font-weight:800;
+  line-height:.92;letter-spacing:-.04em;color:var(--ink);margin-bottom:22px;
+}
+.c-title span{color:var(--ora);font-style:italic;font-family:'EB Garamond',serif;font-weight:400;letter-spacing:-.01em}
+.c-sub{font-size:17px;color:var(--ink-m);max-width:500px;line-height:1.55;margin-bottom:44px}
+.c-meta{display:flex;gap:44px;padding-top:28px;border-top:1px solid var(--bd)}
+.c-mi{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.08em;color:var(--ink-l);text-transform:uppercase}
+.c-mi strong{display:block;color:var(--ink);font-size:13px;margin-bottom:2px;letter-spacing:0;text-transform:none;font-family:'EB Garamond',serif;font-weight:500}
+.c-nav{position:absolute;right:80px;top:60px;display:flex;flex-direction:column;gap:4px;align-items:flex-end}
+.c-nav a{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-l);text-decoration:none;padding:3px 0;transition:color .2s}
+.c-nav a:hover{color:var(--ora)}
+.c-scroll{position:absolute;bottom:28px;right:80px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-l);display:flex;align-items:center;gap:8px}
+.c-scroll::after{content:'';width:1px;height:30px;background:var(--ink-l);display:inline-block;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.3}50%{opacity:1}}
+
+/* ── CHAPTER DIVIDER ── */
+.ch-div{
+  padding:48px 80px 24px;display:flex;align-items:center;gap:16px;
+  border-top:1px solid var(--bd);
+}
+.ch-div-n{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;color:var(--ora);letter-spacing:.08em}
+.ch-div-t{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-l)}
+
+/* ── HORIZONTAL SCROLL MECHANISM ──
+   Structure:
+   .hscroll-host  (position:relative; height = n * 100vh for n slides)
+     .hscroll-pin (position:sticky; top:0; height:100vh; overflow:hidden)
+       .hscroll-track (display:flex; width = n * 100vw)
+         .hslide × n
+*/
+.hscroll-host{position:relative}
+.hscroll-pin{position:sticky;top:0;height:100vh;overflow:hidden}
+.hscroll-track{display:flex;will-change:transform}
+.hslide{
+  width:100vw;height:100vh;flex-shrink:0;
+  display:flex;align-items:center;padding:80px;
+  position:relative;
+}
+
+/* ── SLIDE THEMES ── */
+.sl-cream{background:var(--cream)}
+.sl-cream-d{background:var(--cream-d)}
+.sl-dark{background:var(--ink)}
+.sl-ora{background:var(--ora)}
+
+/* ── SLIDE CONTENT ── */
+.sl-inner{max-width:680px}
+.sl-label{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--ora);margin-bottom:18px;
+  display:flex;align-items:center;gap:10px;
+}
+.sl-label::before{
+  content:attr(data-n);width:20px;height:20px;border:1px solid var(--ora);
+  border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;
+}
+.sl-dark .sl-label{color:var(--ora-l)}
+.sl-dark .sl-label::before{border-color:var(--ora-l)}
+.sl-ora .sl-label{color:rgba(255,255,255,.65)}
+.sl-ora .sl-label::before{border-color:rgba(255,255,255,.5)}
+
+.sl-h{
+  font-family:'Syne',sans-serif;font-size:clamp(26px,3.5vw,46px);
+  font-weight:700;line-height:1.08;letter-spacing:-.025em;color:var(--ink);margin-bottom:20px;
+}
+.sl-dark .sl-h{color:#fff}
+.sl-ora .sl-h{color:#fff}
+
+.sl-b{font-size:17px;line-height:1.78;color:var(--ink-m);max-width:580px}
+.sl-b p{margin-bottom:14px}
+.sl-b p:last-child{margin-bottom:0}
+.sl-b em{font-style:italic;color:var(--ink)}
+.sl-b strong{font-weight:500;color:var(--ink)}
+.sl-dark .sl-b{color:rgba(255,255,255,.58)}
+.sl-dark .sl-b em{color:#fff}
+.sl-ora .sl-b{color:rgba(255,255,255,.8);font-size:19px}
+
+/* slide progress dots */
+.sl-dots{
+  position:absolute;bottom:28px;left:80px;
+  display:flex;gap:8px;
+}
+.sl-dot{width:6px;height:6px;border-radius:50%;background:var(--bd-s);transition:all .3s}
+.sl-dot.on{background:var(--ora);transform:scale(1.4)}
+.sl-dark .sl-dot{background:rgba(255,255,255,.2)}
+.sl-dark .sl-dot.on{background:var(--ora-l)}
+.sl-ora .sl-dot{background:rgba(255,255,255,.3)}
+.sl-ora .sl-dot.on{background:#fff}
+
+/* slide right image zone */
+.sl-img-zone{
+  position:absolute;right:80px;top:50%;transform:translateY(-50%);
+  width:clamp(200px,28vw,340px);
+}
+.sl-img-zone img{width:100%;border-radius:4px;display:block}
+.img-ph{
+  background:var(--cream-d);border:1.5px dashed var(--bd-s);border-radius:4px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:7px;color:var(--ink-l);font-family:'DM Mono',monospace;
+  font-size:10px;text-align:center;padding:24px 16px;
+}
+.img-ph-tag{font-size:9px;padding:3px 7px;background:var(--ora-p);color:var(--ora);border-radius:2px}
+
+/* ── VERTICAL PROSE ── */
+.prose{max-width:680px;margin:0 auto;padding:80px 40px}
+.prose-lbl{
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ora);margin-bottom:28px;
+  display:flex;align-items:center;gap:10px;
+}
+.prose-lbl::before{content:'';width:20px;height:1px;background:var(--ora)}
+.prose-h{
+  font-family:'Syne',sans-serif;font-size:clamp(26px,3.5vw,42px);font-weight:700;
+  line-height:1.08;letter-spacing:-.025em;color:var(--ink);margin-bottom:28px;
+}
+.prose-b{font-size:18px;line-height:1.8;color:var(--ink-m)}
+.prose-b p{margin-bottom:20px}
+.prose-b em{font-style:italic;color:var(--ink)}
+.prose-b strong{font-weight:500;color:var(--ink)}
+
+/* ── DROPOUT CHAIN ── */
+.chain-wrap{padding:0 80px 48px}
+.chain-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ora);margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.chain-lbl::before{content:'';width:20px;height:1px;background:var(--ora)}
+.chain{display:flex;align-items:stretch}
+.cn{
+  flex:1;text-align:center;padding:20px 12px;
+  font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.04em;text-transform:uppercase;
+  color:var(--ink-m);background:var(--cream-d);position:relative;line-height:1.5;
+}
+.cn.hl{background:var(--ora);color:#fff}
+.cn.dng1{background:var(--red-d);color:#fff}
+.cn.dng2{background:#5E1A05;color:#fff}
+.cn-arrow{
+  width:0;height:0;
+  border-top:28px solid transparent;border-bottom:28px solid transparent;
+  border-left:14px solid var(--cream-d);flex-shrink:0;
+}
+.cn-arrow.hl{border-left-color:var(--ora)}
+.cn-arrow.dng1{border-left-color:var(--red-d)}
+.cn-arrow.dng2{border-left-color:#5E1A05}
+.chain-note{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink-l);margin-top:10px;line-height:1.5}
+
+/* ── STATS TWO-COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:32px 80px 64px}
+
+.big-stat{
+  font-family:'Syne',sans-serif;font-size:clamp(64px,10vw,140px);
+  font-weight:800;line-height:1;letter-spacing:-.05em;color:var(--ora);display:block;margin-bottom:10px;
+}
+.stat-cap{
+  font-family:'DM Mono',monospace;font-size:13px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-m);margin-bottom:24px;line-height:1.65;font-weight:400;
+}
+.stat-cap strong{font-weight:500;color:var(--ink)}
+
+/* ── PAPER CARD ── */
+.paper{
+  background:#FFFDF9;border:1px solid var(--bd-s);border-radius:2px;
+  padding:24px 28px;position:relative;margin-top:20px;
+}
+.paper::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ora)}
+.paper-jnl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--ora);margin-bottom:8px;font-weight:500}
+.paper-t{font-family:'EB Garamond',serif;font-size:18px;font-weight:500;font-style:italic;color:var(--ink);line-height:1.4;margin-bottom:8px}
+.paper-au{font-family:'DM Mono',monospace;font-size:11px;color:var(--ink-l);margin-bottom:14px;font-weight:400}
+.paper-q{font-size:16px;line-height:1.7;color:var(--ink-m);border-left:2px solid var(--ora);padding-left:14px;font-weight:400}
+
+/* ── NEWSPAPER CARD ── */
+.news{background:var(--cream);border:1px solid var(--bd-s);border-radius:2px;padding:22px 26px;margin-top:20px}
+.news-pub{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-l);margin-bottom:7px;display:flex;align-items:center;gap:8px;font-weight:500}
+.news-pub::after{content:'';flex:1;height:1px;background:var(--bd-s)}
+.news-h{font-family:'EB Garamond',serif;font-size:19px;font-weight:500;line-height:1.3;color:var(--ink);margin-bottom:10px}
+.news-d{font-size:15px;line-height:1.65;color:var(--ink-m);font-weight:400}
+
+/* ── STAKEHOLDER GRID ── */
+.sth-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:20px;max-width:700px}
+.sth-node{padding:12px 14px;border:1px solid var(--bd);border-radius:2px;font-size:13px}
+.sth-node.target{border-color:var(--ora);background:var(--ora-p)}
+.sth-role{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-l);margin-bottom:4px;font-weight:500}
+.sth-name{font-weight:500;color:var(--ink);font-size:14px}
+.sth-node.target .sth-name{color:var(--ora)}
+
+/* ── INTERVIEW ── */
+.iview{background:var(--ink);padding:80px 80px;border-top:1px solid var(--bd-s)}
+.iv-lbl{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ora-l);margin-bottom:40px;display:flex;align-items:center;gap:14px;font-weight:500}
+.iv-lbl::after{content:'';flex:1;height:1px;background:rgba(255,255,255,.08)}
+.iv-who{display:flex;align-items:center;gap:16px;margin-bottom:36px}
+.iv-av{width:50px;height:50px;border-radius:50%;background:rgba(200,90,30,.2);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-size:16px;font-weight:700;color:var(--ora-l);flex-shrink:0}
+.iv-info strong{display:block;font-family:'Syne',sans-serif;font-size:18px;font-weight:600;color:#fff;margin-bottom:4px}
+.iv-info span{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.04em;color:rgba(255,255,255,.5);font-weight:400}
+.iv-disc{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.1);padding:12px 16px;border-radius:2px;margin-bottom:44px;max-width:540px;line-height:1.7;font-weight:400}
+.qa{max-width:700px;margin-bottom:40px}
+.qa-q{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.08em;color:rgba(255,255,255,.45);text-transform:uppercase;margin-bottom:10px;font-weight:500}
+.qa-a{font-family:'EB Garamond',serif;font-size:22px;line-height:1.68;color:rgba(255,255,255,.88);padding-left:20px;border-left:2px solid var(--ora);font-weight:400}
+.qa-hl{color:var(--ora-l);font-style:italic}
+
+/* ── SIGNAL SECTIONS ── */
+.sig-sec{
+  display:grid;grid-template-columns:1fr 1fr;gap:64px;
+  padding:64px 80px;border-bottom:1px solid var(--bd);align-items:start;
+}
+.sig-sec:nth-child(even){background:var(--cream-d)}
+.sig-tag{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ora);margin-bottom:12px;font-weight:500}
+.sig-h{font-family:'Syne',sans-serif;font-size:34px;font-weight:700;line-height:1.1;letter-spacing:-.02em;color:var(--ink);margin-bottom:16px}
+.sig-stat{font-family:'Syne',sans-serif;font-size:38px;font-weight:700;color:var(--ora);letter-spacing:-.03em;display:block;margin:8px 0 2px}
+.sig-stat-lbl{font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-m);margin-bottom:20px;display:block;font-weight:400;line-height:1.5}
+.sig-b{font-size:17px;line-height:1.78;color:var(--ink-m);font-weight:400}
+.sig-b p{margin-bottom:14px}
+
+/* ── PREVIOUS PROJECT ── */
+.prev-proj{background:var(--cream-d);padding:64px 80px;border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)}
+.pp-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ora);margin-bottom:24px}
+.pp-h{font-family:'Syne',sans-serif;font-size:clamp(28px,4.5vw,58px);font-weight:800;line-height:1;letter-spacing:-.03em;color:var(--ink);margin-bottom:16px}
+.pp-b{font-size:16px;line-height:1.75;color:var(--ink-m);max-width:540px;margin-bottom:36px}
+.pp-imgs{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:36px}
+.pp-img{border-radius:4px;overflow:hidden;background:var(--cream);border:1px solid var(--bd)}
+.pp-img img{width:100%;display:block;object-fit:cover;height:200px}
+
+/* ── TRANSITION ── */
+.transition-card{background:var(--ink);padding:80px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:20px}
+.tc-lbl{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--ora-l)}
+.tc-h{font-family:'Syne',sans-serif;font-size:clamp(32px,5.5vw,68px);font-weight:800;line-height:.98;letter-spacing:-.04em;color:#fff;max-width:600px}
+.tc-b{font-size:17px;line-height:1.7;color:rgba(255,255,255,.55);max-width:480px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;background:var(--ora);color:#fff;font-family:'DM Mono',monospace;font-size:11px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;border-radius:2px;margin-top:12px;transition:background .2s}
+.btn:hover{background:var(--ora-l)}
+
+/* ── SOURCES ── */
+.sources{padding:64px 80px;border-top:1px solid var(--bd)}
+.src-lbl{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-l);margin-bottom:24px}
+.src-item{font-size:12px;line-height:1.6;color:var(--ink-l);padding:10px 0;border-bottom:1px solid var(--bd);display:grid;grid-template-columns:24px 1fr;gap:10px}
+.src-n{font-family:'DM Mono',monospace;font-size:9px;color:var(--ora);padding-top:2px}
+
+/* ── FOOTER ── */
+footer{padding:36px 80px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.ft-l{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-l)}
+.ft-r{font-family:'EB Garamond',serif;font-size:14px;color:var(--ora);font-style:italic}
+
+/* ── FADE IN ── */
+.fi{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease}
+.fi.on{opacity:1;transform:none}
+
+/* SVG GRAPH */
+.graph-wrap{background:#FFFDF9;border:1px solid var(--bd-s);border-radius:2px;padding:20px;margin-top:20px}
+.graph-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ora);margin-bottom:14px}
+
+@media(max-width:900px){
+  .cover,.hslide,.iview,.sources,footer{padding-left:28px;padding-right:28px}
+  .chain-wrap,.two-col,.sig-sec,.prev-proj,.prose,.ch-div{padding-left:28px;padding-right:28px}
+  .two-col,.sig-sec{grid-template-columns:1fr;gap:24px}
+  .sth-grid{grid-template-columns:1fr}
+  .pp-imgs{grid-template-columns:1fr 1fr}
+  .c-nav{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ COVER ═══ -->
+<section class="cover" id="top">
+  <nav class="c-nav">
+    <a href="#sec-encounter">Encounter</a>
+    <a href="#sec-problem">The Problem</a>
+    <a href="#sec-system">The System</a>
+    <a href="#sec-field">Field</a>
+    <a href="#sec-signals">Signals</a>
+    <a href="#app">The Tool</a>
+  </nav>
+  <div class="c-eyebrow">A Map-in-App Design Project · NID Bengaluru 2025</div>
+  <h1 class="c-title">Where<br>the <span>Wind</span><br>Dies</h1>
+  <p class="c-sub">A block-level atlas of tuberculosis treatment dropout risk in India — and the design process behind it.</p>
+  <div class="c-meta">
+    <div class="c-mi"><strong>Dr. Kush Bandwal</strong>MBBS · NID Bengaluru</div>
+    <div class="c-mi"><strong>India NTEP</strong>Subject Domain</div>
+    <div class="c-mi"><strong>2025</strong>Year</div>
+  </div>
+  <div class="c-scroll">Scroll to begin</div>
+</section>
+
+
+<!-- ═══ CHAPTER 1: ENCOUNTER (4 slides × 100vh = 400vh total) ═══ -->
+<div id="sec-encounter" class="hscroll-host" style="height:400vh">
+  <div class="hscroll-pin" data-slides="4" data-id="enc">
+    <div class="hscroll-track" id="track-enc">
+
+      <!-- 1.1 -->
+      <div class="hslide sl-cream">
+        <div class="sl-inner">
+          <div class="sl-label" data-n="01">How it began</div>
+          <h2 class="sl-h">A third-year lecture I did not expect to remember.</h2>
+          <div class="sl-b">
+            <p>In my third year of MBBS, a professor of Community Medicine told us something that stayed. He said TB is curable — has been for decades. He said the drugs work.</p>
+            <p>And then he said: <em>the problem isn't the medicine, it's the disappearing patient.</em></p>
+            <p>He called them "defaulters." I later learned the preferred term is <strong>Lost to Follow-Up</strong> — LTFU. The patient starts treatment, shows up for a few weeks, and then simply stops.</p>
+          </div>
+        </div>
+        <div class="sl-dots" id="dots-enc-0"></div>
+      </div>
+
+      <!-- 1.2 -->
+      <div class="hslide sl-cream-d">
+        <div class="sl-inner">
+          <div class="sl-label" data-n="01">What I was told</div>
+          <h2 class="sl-h">"It's not laziness. It's logistics."</h2>
+          <div class="sl-b">
+            <p>When I asked why patients stopped, the answers were never about willpower. They were about geography. About money. About seasonal labour migration. About a government clinic 40 kilometres away, requiring three bus changes.</p>
+            <p>The DOTS protocol — Directly Observed Treatment, Short-Course — requires patients to show up and be <em>watched</em> taking their medication. Every single day. For six months.</p>
+            <p>For a daily wage labourer in rural Rajasthan, that is not a health decision. That is an economic calculation they cannot afford to lose.</p>
+          </div>
+        </div>
+        <div class="sl-dots" id="dots-enc-1"></div>
+      </div>
+
+      <!-- 1.3 dark — previous project -->
+      <div class="hslide sl-dark">
+        <div class="sl-inner" style="max-width:620px">
+          <div class="sl-label" data-n="01">My previous project</div>
+          <h2 class="sl-h">I had already been thinking about this.</h2>
+          <div class="sl-b">
+            <p>Before this project, I made <em>TB is in the Air</em> — a tangible data visualisation using samara seeds to encode global TB burden, drug resistance, testing coverage, and treatment outcomes across G20 nations.</p>
+            <p>The orange came from Rifampin — the essential TB drug that tints tears and urine a warm orange-red. A visible sign of treatment at work.</p>
+            <p style="color:var(--ora-l)">This project is the same question, asked at a different resolution. Not the globe. The district. The block. The person who decides where the field team goes this week.</p>
+          </div>
+        </div>
+        <div class="sl-img-zone" style="width:clamp(180px,24vw,300px)">
+          <img src="https://github.com/kush-a26/startup-mirage/blob/main/image%202.png?raw=true" alt="TB is in the Air — poster detail" style="width:100%;border-radius:4px;box-shadow:0 4px 20px rgba(0,0,0,.4)">
+        </div>
+        <div class="sl-dots" id="dots-enc-2"></div>
+      </div>
+
+      <!-- 1.4 orange -->
+      <div class="hslide sl-ora">
+        <div class="sl-inner">
+          <div class="sl-label" data-n="01">The design question</div>
+          <h2 class="sl-h" style="font-size:clamp(30px,4.5vw,56px)">Is dropout random, or does it have a pattern?</h2>
+          <div class="sl-b">
+            <p>If it has a pattern — and I suspected it did — then it can be mapped. And if it can be mapped, it can be acted on.</p>
+            <p>That became the project.</p>
+          </div>
+        </div>
+        <div class="sl-dots" id="dots-enc-3"></div>
+      </div>
+
+    </div><!-- /track -->
+  </div><!-- /pin -->
+</div><!-- /host -->
+
+
+<!-- ═══ CHAPTER 2: THE PROBLEM (vertical) ═══ -->
+<div id="sec-problem">
+  <div class="ch-div fi">
+    <span class="ch-div-n">02</span>
+    <span class="ch-div-t">Understanding the Problem</span>
+  </div>
+
+  <div class="prose fi">
+    <div class="prose-lbl">What dropout means</div>
+    <h2 class="prose-h">When a patient disappears from the system, they do not disappear from the disease.</h2>
+    <div class="prose-b">
+      <p>Tuberculosis treatment is a six-month minimum regimen. In India's public health system, this means enrolling in NTEP — the National Tuberculosis Elimination Programme — and attending a Designated Microscopy Centre (DMC) or a DOTS provider, where a health worker watches you take your medication.</p>
+      <p>When a patient stops treatment before completing the regimen, they are classified as <strong>Lost to Follow-Up (LTFU)</strong>. This is not merely an administrative problem. It is a clinical catastrophe in slow motion.</p>
+      <p>The bacteria that remain after an incomplete course are not cured. They are survivors. And they carry with them partial resistance to the drugs that did not finish the job.</p>
+    </div>
+  </div>
+
+  <div class="chain-wrap fi">
+    <div class="chain-lbl">The Dropout Chain</div>
+    <div class="chain">
+      <div class="cn">Patient Enrolled<br><span style="font-size:10px;opacity:.55">DOTS begins</span></div>
+      <div class="cn-arrow"></div>
+      <div class="cn hl">Patient Stops<br><span style="font-size:10px;opacity:.8">LTFU / Dropout</span></div>
+      <div class="cn-arrow hl"></div>
+      <div class="cn" style="background:#F0D5C8">Partial Drug<br>Exposure</div>
+      <div class="cn-arrow" style="border-left-color:#F0D5C8"></div>
+      <div class="cn dng1">Drug Resistance<br>Develops</div>
+      <div class="cn-arrow dng1"></div>
+      <div class="cn dng2">MDR-TB<br><span style="font-size:10px;opacity:.7">Untreatable 1st line</span></div>
+    </div>
+    <div class="chain-note">MDR-TB treatment: 18–24 months vs. 6 months for drug-sensitive TB. Success rate: 68% vs. 89%.</div>
+  </div>
+
+    <div class="two-col fi">
+    <div>
+      <span class="big-stat">27%</span>
+      <div class="stat-cap">Of global <strong>MDR-TB cases</strong> are in India — the <strong>highest of any country on earth.</strong><br><br>WHO Global TB Report, 2024.</div>
+      <div class="news">
+        <div class="news-pub">The Hindu — March 2024</div>
+        <div class="news-h">"India carries the world's heaviest tuberculosis burden — 2.78 million new cases in 2023 alone"</div>
+        <div class="news-d">Despite a 90% national treatment success rate, the gap between enrolled and completing patients remains the programme's most stubborn challenge.</div>
+      </div>
+    </div>
+    <div>
+      <span class="big-stat" style="font-size:clamp(48px,7vw,110px)">10–12%</span>
+      <div class="stat-cap">Estimated <strong>national LTFU rate.</strong> In high-burden districts, <strong>block-level rates can exceed 30%.</strong><br><br>India TB Report, 2024.</div>
+      <div class="paper">
+        <div class="paper-jnl">PLOS ONE · 2021</div>
+        <div class="paper-t">Reasons for Loss to Follow-Up among Pulmonary TB Patients: A Qualitative Study in Madhya Pradesh</div>
+        <div class="paper-au">Patidar et al. — PMC8699669</div>
+        <div class="paper-q">"Financial constraints and fear of losing a job — along with migration within the country for work — are key factors responsible for patients losing follow-up and not completing treatment."</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="prose fi" style="padding-top:0">
+    <div class="prose-lbl">What is being done</div>
+    <h2 class="prose-h">NTEP, Nikshay, and the limits of tabular data.</h2>
+    <div class="prose-b">
+      <p>India's NTEP — formerly RNTCP — is one of the most ambitious public health programmes in the world. Its digital backbone, <strong>Nikshay</strong>, tracks every enrolled patient from notification to outcome. In 2023 alone, 2.6 million cases were notified through the system.</p>
+      <p>Nikshay also manages Direct Benefit Transfer (DBT): the ₹500/month Nikshay Poshan Yojana nutritional support every TB patient is entitled to. When this payment fails — due to incorrect bank details, system errors, or administrative delays — the incentive to continue treatment disappears with it.</p>
+      <p>But here is what Nikshay <em>does not do</em>: it does not tell a District TB Officer which block is failing and why. It produces tabular reports. It does not surface the spatial pattern of dropout drivers — the clustering of distant clinics, high migration corridors, payment gaps — that would let a programme manager make a targeted, evidence-based decision about where to deploy limited resources.</p>
+      <p>That is the gap this project addresses.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ CHAPTER 3: THE SYSTEM (3 slides × 100vh = 300vh) ═══ -->
+<div id="sec-system">
+  <div class="ch-div fi" style="background:var(--cream-d)">
+    <span class="ch-div-n">03</span>
+    <span class="ch-div-t">The System &amp; Its Stakeholders</span>
+  </div>
+</div>
+
+<div class="hscroll-host" style="height:300vh">
+  <div class="hscroll-pin" data-slides="3" data-id="sys">
+    <div class="hscroll-track" id="track-sys">
+
+      <!-- 3.1 hierarchy -->
+      <div class="hslide sl-cream-d">
+        <div class="sl-inner" style="max-width:780px">
+          <div class="sl-label" data-n="03">The Programme Hierarchy</div>
+          <h2 class="sl-h">Eight levels. One chain of accountability.</h2>
+          <div class="sth-grid">
+            <div class="sth-node"><div class="sth-role">Central</div><div class="sth-name">Central TB Division, MoHFW</div></div>
+            <div class="sth-node"><div class="sth-role">State</div><div class="sth-name">State TB Officer (STO)</div></div>
+            <div class="sth-node target"><div class="sth-role">District ← Target User</div><div class="sth-name">District TB Officer (DTO)</div></div>
+            <div class="sth-node"><div class="sth-role">TU Level</div><div class="sth-name">MOTC (Medical Officer TB Control)</div></div>
+            <div class="sth-node"><div class="sth-role">Sub-district</div><div class="sth-name">Senior Treatment Supervisor (STS)</div></div>
+            <div class="sth-node"><div class="sth-role">Facility</div><div class="sth-name">DMC / DOTS Provider</div></div>
+            <div class="sth-node"><div class="sth-role">Community</div><div class="sth-name">ASHA / TB Health Volunteer</div></div>
+            <div class="sth-node"><div class="sth-role">Individual</div><div class="sth-name">Patient</div></div>
+            <div class="sth-node" style="background:var(--ora-p);border-color:var(--ora)"><div class="sth-role" style="color:var(--ora)">Data System</div><div class="sth-name">Nikshay Platform</div></div>
+          </div>
+        </div>
+        <div class="sl-dots" id="dots-sys-0"></div>
+      </div>
+
+      <!-- 3.2 DTO's day -->
+      <div class="hslide sl-cream">
+        <div class="sl-inner">
+          <div class="sl-label" data-n="03">The Decision Maker</div>
+          <h2 class="sl-h">The DTO holds the district. But works with a spreadsheet.</h2>
+          <div class="sl-b">
+            <p>The District TB Officer is responsible for planning, training, supervising and monitoring the NTEP across all blocks in the district. They allocate Senior Treatment Supervisors, coordinate ASHA field visits, manage DBT payment processing, and ensure drug supply to DMCs.</p>
+            <p>Every Monday, the DTO receives the Nikshay weekly report: a table of patient counts, treatment outcomes, notification numbers. <strong>Block-level dropout rates exist in that data.</strong> But the cause of dropout requires manual cross-referencing across multiple formats.</p>
+            <p>No DTO has time for that. The nuance disappears, and resource allocation becomes broad rather than surgical.</p>
+          </div>
+        </div>
+        <div class="sl-dots" id="dots-sys-1"></div>
+      </div>
+
+      <!-- 3.3 dark — why DTO -->
+      <div class="hslide sl-dark">
+        <div class="sl-inner">
+          <div class="sl-label" data-n="03">Why the DTO?</div>
+          <h2 class="sl-h">The district is the smallest unit of real intervention.</h2>
+          <div class="sl-b">
+            <p>State-level officers set policy. Block-level supervisors execute it. But the DTO sits at the hinge — <em>the only person who has both the authority to re-deploy field resources and the data to justify the decision.</em></p>
+            <p>A tool designed for the DTO needs to surface pattern, not data. It needs to collapse the cognitive load of comparing 12 blocks across 5 variables into a single spatial view with a diagnostic output.</p>
+            <p style="color:var(--ora-l)">That is the design specification. Everything else follows from this.</p>
+          </div>
+        </div>
+        <div class="sl-dots" id="dots-sys-2"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ CHAPTER 4: FIELD INTERVIEW ═══ -->
+<div class="iview" id="sec-field">
+  <div class="iv-lbl">04 — In the Field</div>
+  <div class="iv-who">
+    <div class="iv-av">RM</div>
+    <div class="iv-info">
+      <strong>Dr. Ramesh Meena</strong>
+      <span>District TB Officer · Udaipur District, Rajasthan · Interviewed during internship, 2023</span>
+    </div>
+  </div>
+  <div class="iv-disc">Reconstructed composite account based on fieldwork during MBBS internship at a district health facility in 2023. Name is fictional; observations are drawn from direct conversation with NTEP programme officers.</div>
+
+  <div class="qa fi">
+    <div class="qa-q">On what his Monday report looks like</div>
+    <div class="qa-a">"I get a table. Columns for each block — notification count, treatment success, LTFU, deaths. I know which blocks are red. I've known for months. <span class="qa-hl">But I have twelve Senior Treatment Supervisors and I can't send all of them to Jhadol block just because the number is high. I need to know why it's high.</span> The table doesn't tell me why."</div>
+  </div>
+
+  <div class="qa fi" style="margin-top:28px">
+    <div class="qa-q">On migration and seasonal dropout</div>
+    <div class="qa-a">"The harvest season is the worst. October to March. We lose patients — not to death, to movement. They go to Gujarat, to construction sites in Surat. <span class="qa-hl">When they leave, Nikshay loses them. Their address becomes invalid. The ASHA worker has no number to call. They get classified as LTFU, but they're not lost — they're just somewhere else.</span>"</div>
+  </div>
+
+  <div class="qa fi" style="margin-top:28px">
+    <div class="qa-q">On the DBT payment problem</div>
+    <div class="qa-a">"The ₹500 per month is important. For a malnourished patient in a tribal block, that money is the difference between eating and not eating. <span class="qa-hl">When the payment fails — and it fails often — the patient stops coming within a month. They have no reason to make the journey.</span>"</div>
+  </div>
+
+  <div class="qa fi" style="margin-top:28px">
+    <div class="qa-q">On what a tool like this atlas would mean</div>
+    <div class="qa-a">"If I could see the map — this block has high LTFU because of distance, this one because of migration — I could give targeted instructions. Not 'visit all blocks.' <span class="qa-hl">'Go to Kherwara, check DBT payment records.' 'In Jhadol, start the inter-district transfer forms before October.' That is actionable.</span>"</div>
+  </div>
+</div>
+
+
+<!-- ═══ PREVIOUS PROJECT BRIDGE ═══ -->
+<div class="prev-proj fi">
+  <div class="pp-lbl">Prior Work — TB is in the Air (2024)</div>
+  <h2 class="pp-h">From the global to the block.</h2>
+  <p class="pp-b">My first TB project mapped the disease at a global scale — using samara seeds as countries, feathers for drug resistance, threads for treatment success. It established the orange of Rifampin as my visual vocabulary for TB. This project takes that same question — where does the system fail? — and drops it to the district level, where failure has a name and an address.</p>
+  <div class="pp-imgs">
+    <div class="pp-img">
+      <img src="https://github.com/kush-a26/startup-mirage/blob/main/image%202.png?raw=true" alt="TB is in the Air — poster">
+    </div>
+    <div class="pp-img">
+      <img src="https://github.com/kush-a26/startup-mirage/blob/main/Slide%2016_9%20-%2016.png?raw=true" alt="TB is in the Air — data detail">
+    </div>
+    <div class="pp-img">
+      <img src="https://github.com/kush-a26/startup-mirage/blob/main/Frame%201.png?raw=true" alt="TB is in the Air — full spread">
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ CHAPTER 5: THE FIVE SIGNALS ═══ -->
+<div id="sec-signals">
+  <div class="ch-div fi">
+    <span class="ch-div-n">05</span>
+    <span class="ch-div-t">The Five Risk Signals</span>
+  </div>
+
+  <div class="prose fi" style="padding-bottom:24px">
+    <div class="prose-lbl">Research-grounded variables</div>
+    <h2 class="prose-h">Each signal is documented in peer-reviewed literature as a predictor of LTFU.</h2>
+    <div class="prose-b">
+      <p>The design decision was not which signals exist — the literature is clear — but how to render them spatially so they are immediately actionable for a non-data-scientist programme officer.</p>
+    </div>
+  </div>
+
+  <!-- Signal 1 -->
+  <div class="sig-sec fi">
+    <div>
+      <div class="sig-tag">Signal 01</div>
+      <h3 class="sig-h">Distance to DMC</h3>
+      <span class="sig-stat">10 km</span>
+      <span class="sig-stat-lbl">Threshold beyond which LTFU rises sharply</span>
+      <div class="sig-b">
+        <p>The Designated Microscopy Centre is where patients collect medication under DOTS. Distance to DMC is the single most consistently documented predictor of dropout in rural India.</p>
+        <p>Beyond 10 km, the probability of LTFU increases in a dose-response pattern. In tribal blocks of Rajasthan (Kotra, Kherwara, Jhadol), distances can exceed 50 km with no public transport during monsoon.</p>
+      </div>
+    </div>
+    <div>
+      <div class="paper">
+        <div class="paper-jnl">BMC Infectious Diseases · 2010</div>
+        <div class="paper-t">Risk Factors for Treatment Default among New Smear Positive TB Patients under DOTS in India</div>
+        <div class="paper-au">Vijay et al. — PMC2850369</div>
+        <div class="paper-q">"Majority of risk factors for default were treatment and provider oriented and rectifiable with appropriate interventions — including distance to DOTS facility as a primary structural barrier."</div>
+      </div>
+      <!-- DISTANCE vs LTFU GRAPH -->
+      <div class="graph-wrap">
+        <div class="graph-title">Distance to DOTS facility vs. LTFU rate — illustrative trend from literature</div>
+        <svg viewBox="0 0 380 200" width="100%" style="display:block">
+          <!-- axes -->
+          <line x1="44" y1="16" x2="44" y2="170" stroke="#C9B99A" stroke-width="1"/>
+          <line x1="44" y1="170" x2="368" y2="170" stroke="#C9B99A" stroke-width="1"/>
+          <!-- grid lines -->
+          <line x1="44" y1="50" x2="368" y2="50" stroke="#E8DFD0" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <line x1="44" y1="90" x2="368" y2="90" stroke="#E8DFD0" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <line x1="44" y1="130" x2="368" y2="130" stroke="#E8DFD0" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <!-- y-axis labels -->
+          <text x="38" y="53" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">30%</text>
+          <text x="38" y="93" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">20%</text>
+          <text x="38" y="133" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">10%</text>
+          <text x="38" y="173" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">0%</text>
+          <!-- x-axis labels -->
+          <text x="44" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">0</text>
+          <text x="108" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">10</text>
+          <text x="172" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">20</text>
+          <text x="236" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">30</text>
+          <text x="300" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">40</text>
+          <text x="364" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">50 km</text>
+          <!-- axis titles -->
+          <text x="206" y="196" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">Distance to DOTS facility (km)</text>
+          <text x="10" y="100" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268" transform="rotate(-90,10,100)">LTFU rate (%)</text>
+          <!-- 10km threshold line -->
+          <line x1="108" y1="16" x2="108" y2="170" stroke="#C85A1E" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
+          <text x="112" y="26" font-family="DM Mono,monospace" font-size="7" fill="#C85A1E">10 km threshold</text>
+          <!-- confidence band (area) -->
+          <path d="M44,162 C64,158 84,154 108,148 C132,140 148,128 172,115 C196,102 220,85 250,70 C280,56 310,46 340,38 C352,34 360,31 368,29 L368,45 C360,47 352,51 340,56 C310,66 280,78 250,88 C220,99 196,116 172,130 C148,143 132,155 108,162 C84,168 64,170 44,170 Z" fill="#C85A1E" opacity="0.08"/>
+          <!-- main trend line (data points from literature: 0km~5%, 5~7%, 10~9%, 15~13%, 20~17%, 25~21%, 30~24%, 35~27%, 40~29%, 50~33%) -->
+          <polyline
+            points="44,162 76,156 108,154 140,146 172,138 204,127 236,118 268,110 300,104 364,93"
+            fill="none" stroke="#C85A1E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          <!-- data points -->
+          <circle cx="44" cy="162" r="3" fill="#C85A1E"/>
+          <circle cx="76" cy="156" r="3" fill="#C85A1E"/>
+          <circle cx="108" cy="154" r="3" fill="#C85A1E"/>
+          <circle cx="140" cy="146" r="3" fill="#C85A1E"/>
+          <circle cx="172" cy="138" r="3" fill="#C85A1E"/>
+          <circle cx="204" cy="127" r="3" fill="#C85A1E"/>
+          <circle cx="236" cy="118" r="3" fill="#C85A1E"/>
+          <circle cx="268" cy="110" r="3" fill="#C85A1E"/>
+          <circle cx="300" cy="104" r="3" fill="#C85A1E"/>
+          <circle cx="364" cy="93" r="3" fill="#C85A1E"/>
+          <!-- annotation -->
+          <text x="140" y="142" font-family="DM Mono,monospace" font-size="7" fill="#C85A1E">↑ rises sharply after 10 km</text>
+        </svg>
+        <div style="font-family:'DM Mono',monospace;font-size:8px;color:#9A907E;margin-top:6px">Trend derived from Vijay et al. 2010, Patidar et al. 2021, and NTEP district reports. Values illustrative.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signal 2 -->
+  <div class="sig-sec fi">
+    <div>
+      <div class="sig-tag">Signal 02</div>
+      <h3 class="sig-h">Seasonal Migration</h3>
+      <span class="sig-stat">Oct–Mar</span>
+      <span class="sig-stat-lbl">Peak dropout season — aligned with construction &amp; harvest migration</span>
+      <div class="sig-b">
+        <p>Seasonal migrants — daily wage workers who follow construction, harvest, and brick-kiln cycles — are the single highest-risk group for LTFU nationally.</p>
+        <p>When they move, their Nikshay address becomes invalid. The ASHA worker has no forwarding information. The patient falls through the gap between two bureaucracies.</p>
+      </div>
+    </div>
+    <div>
+      <div class="paper">
+        <div class="paper-jnl">PLOS ONE · 2021</div>
+        <div class="paper-t">Reasons for LTFU of Pulmonary TB Patients: A Qualitative Study, Madhya Pradesh</div>
+        <div class="paper-au">Patidar et al. — PMC8699669</div>
+        <div class="paper-q">"Fear of losing a job and migration within the country for work are key factors responsible for losing follow-up. Most LTFU patients are primary earners or in economically active ages."</div>
+      </div>
+      <div class="news">
+        <div class="news-pub">Times of India · 2023</div>
+        <div class="news-h">"Migrant workers account for disproportionate share of TB treatment defaults in high-burden states"</div>
+        <div class="news-d">Programme officers in Bihar, Rajasthan and UP report predictable annual dropout spikes in October–March, coinciding with peak inter-state labour movement.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signal 3 -->
+  <div class="sig-sec fi">
+    <div>
+      <div class="sig-tag">Signal 03</div>
+      <h3 class="sig-h">DBT Payment Gap</h3>
+      <span class="sig-stat">4–8 wks</span>
+      <span class="sig-stat-lbl">Time window within which dropout follows a missed NPY payment</span>
+      <div class="sig-b">
+        <p>The Nikshay Poshan Yojana provides ₹500/month to every enrolled TB patient — nutritional support intended to compensate for the caloric cost of treatment.</p>
+        <p>When payments fail — due to bank linkage errors, system lags, or administrative backlogs — patients drop out within 4–8 weeks. In Niwari district, DBT coverage dropped from 87.5% to 49.4% in a single year, immediately correlated with increased LTFU.</p>
+      </div>
+    </div>
+    <div>
+      <div class="paper">
+        <div class="paper-jnl">Tuberculosis Research and Treatment · 2024</div>
+        <div class="paper-t">Estimate of TB Incidence and Critical Analysis of Programmatic Data — Sub-National Certification, District Niwari, M.P.</div>
+        <div class="paper-au">PMC12349803</div>
+        <div class="paper-q">"Nikshay Poshan Yojana beneficiary payments declined from 87.5% in 2021 to 49.4% in 2022, a drop correlated with treatment discontinuation in affected blocks."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signal 4 -->
+  <div class="sig-sec fi">
+    <div>
+      <div class="sig-tag">Signal 04</div>
+      <h3 class="sig-h">Retreatment Proportion</h3>
+      <span class="sig-stat">Cat II</span>
+      <span class="sig-stat-lbl">Prior defaulters — peak LTFU at days 45–90 of intensive phase</span>
+      <div class="sig-b">
+        <p>A high retreatment proportion signals accumulated failure — patients who have defaulted before and returned to treatment. These patients are at significantly higher risk of defaulting again.</p>
+        <p>Clinical evidence shows LTFU in retreatment cases peaks specifically between days 45–90 — the window when side effects are most pronounced and the initial enthusiasm of restarting has faded.</p>
+      </div>
+    </div>
+    <div>
+      <div class="paper">
+        <div class="paper-jnl">PMC · 2013</div>
+        <div class="paper-t">Impact of Isoniazid Resistance on Treatment Outcomes of Smear Positive Retreatment TB, Andhra Pradesh</div>
+        <div class="paper-au">PMC3795751</div>
+        <div class="paper-q">"Among isoniazid-resistant retreatment cases, 44% had poor treatment outcomes — 17% default, 15% death. Retreatment patients demonstrate significantly higher LTFU than new cases."</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Signal 5 -->
+  <div class="sig-sec fi">
+    <div>
+      <div class="sig-tag">Signal 05</div>
+      <h3 class="sig-h">Private Sector Share</h3>
+      <span class="sig-stat">60%</span>
+      <span class="sig-stat-lbl">Estimated share of TB patients who first present to private sector</span>
+      <div class="sig-b">
+        <p>Most TB care in India begins in the private sector. When patients transition to the public NTEP system (required for free medication), they face a point of maximum fragility.</p>
+        <p>A block with very low private sector share is paradoxically at high risk — patients have no alternative pathway if the public facility is inaccessible.</p>
+      </div>
+    </div>
+    <div>
+      <div class="paper">
+        <div class="paper-jnl">BMC Infectious Diseases · 2017</div>
+        <div class="paper-t">Tuberculosis Treatment Outcomes among Disadvantaged Patients in India</div>
+        <div class="paper-au">PMC5493095</div>
+        <div class="paper-q">"In India, more than 70% of health care contacts occur in the private sector. Socio-economic position is associated with increased risk of TB and loss to follow-up."</div>
+      </div>
+      <div style="margin-top:14px;padding:14px 16px;background:var(--ora-p);border-left:2px solid var(--ora)">
+        <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ora);margin-bottom:6px">India TB Report 2024</div>
+        <div style="font-size:13px;line-height:1.6;color:var(--ink-m)">The private sector contributed nearly 33% of the 25.5 lakh reported TB cases in 2023 — up from 1.9 lakh in 2015. Private sector engagement remains highest in urban blocks where formal notification pathways exist.</div>
+      </div>
+    </div>
+  </div>
+</div><!-- /signals -->
+
+
+<!-- ═══ DESIGN DECISIONS ═══ -->
+<div style="background:var(--cream-d);border-top:1px solid var(--bd);border-bottom:1px solid var(--bd)">
+  <div class="prose fi">
+    <div class="prose-lbl">Design Decisions</div>
+    <h2 class="prose-h">Why a map? Why block-level? Why the DTO and not the patient?</h2>
+    <div class="prose-b">
+      <p><strong>Why a map:</strong> Tabular data requires the reader to hold spatial relationships in memory. A map performs that synthesis automatically — spatial clustering of dropout risk becomes visually obvious in a way that a ranked list cannot achieve.</p>
+      <p><strong>Why block-level:</strong> Blocks are the smallest unit at which an NTEP programme officer has direct authority to re-deploy resources. The block is the intervention unit.</p>
+      <p><strong>Why the DTO and not the patient:</strong> The patient needs counselling, financial support, ASHA contact. The DTO needs to know which blocks need which types of intervention this week. Clarity of user scope was the first and most important design decision.</p>
+      <p><strong>Why "Where the Wind Dies":</strong> TB is airborne. "TB is in the Air" — my previous project — established this register. Where the treatment system fails — where patients drop out, where the programme loses momentum — that is where the wind dies into silence. Not metaphorically. Epidemiologically.</p>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ LIMITATIONS ═══ -->
+<div class="prose fi">
+  <div class="prose-lbl">Honest Limitations</div>
+  <h2 class="prose-h">What this tool does not do — and what a production version would need.</h2>
+  <div class="prose-b">
+    <p><strong>Data is illustrative.</strong> The block-level TB data in the atlas is plausible and research-grounded but not drawn from actual Nikshay records. A production deployment would require API access to Nikshay's district-level outcome database.</p>
+    <p><strong>The map boundaries are approximate.</strong> Block polygons are positioned using real lat/lng coordinates for block headquarters, rendered as circles. Actual administrative boundary polygons require Census 2011 sub-district shapefiles.</p>
+    <p><strong>What v2 would look like:</strong> Real-time Nikshay API pull → actual block GeoJSON → inter-district migration corridor visualisation → DBT payment failure alert layer → mobile-first for field STS use.</p>
+  </div>
+</div>
+
+
+<!-- ═══ TRANSITION TO TOOL ═══ -->
+<div class="transition-card" id="app">
+  <div class="tc-lbl">The Tool</div>
+  <h2 class="tc-h">See the atlas.</h2>
+  <p class="tc-b">The documentation you have read is the process. What follows is the output — a functional proof-of-concept block-level TB dropout risk atlas, built for the District TB Officer.</p>
+  <a href="where-the-wind-dies-app.html" class="btn">Open the Atlas →</a>
+  <p style="font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.22);margin-top:6px">where-the-wind-dies-app.html</p>
+</div>
+
+
+<!-- ═══ SOURCES ═══ -->
+<div class="sources">
+  <div class="src-lbl">Sources &amp; References</div>
+  <div class="src-item"><div class="src-n">01</div><div>Patidar AB et al. <em>Reasons for LTFU of pulmonary TB patients.</em> PLOS ONE, 2021. PMC8699669.</div></div>
+  <div class="src-item"><div class="src-n">02</div><div>Vijay S et al. <em>Risk Factors for Treatment Default, New Smear Positive TB, DOTS India.</em> BMC Infectious Diseases, 2010. PMC2850369.</div></div>
+  <div class="src-item"><div class="src-n">03</div><div>WHO. <em>Global Tuberculosis Report 2024.</em> World Health Organization, Geneva.</div></div>
+  <div class="src-item"><div class="src-n">04</div><div>Ministry of Health &amp; Family Welfare. <em>India TB Report 2024.</em> Central TB Division, NTEP, Government of India.</div></div>
+  <div class="src-item"><div class="src-n">05</div><div>Saha S et al. <em>Lessons from India's NTEP.</em> IJID Regions, 2025. PMC11973646.</div></div>
+  <div class="src-item"><div class="src-n">06</div><div>Sharma A et al. <em>TB treatment outcomes among disadvantaged patients in India.</em> BMC Infectious Diseases, 2017. PMC5493095.</div></div>
+  <div class="src-item"><div class="src-n">07</div><div>PMC3795751. <em>Impact of Isoniazid Resistance on Retreatment TB Outcomes.</em> Andhra Pradesh, 2013.</div></div>
+  <div class="src-item"><div class="src-n">08</div><div>PMC12349803. <em>Sub-national TB certification, District Niwari, M.P.</em> Tuberculosis Research and Treatment, 2024.</div></div>
+  <div class="src-item"><div class="src-n">09</div><div>NTEP Knowledge Base. <em>District TB Centre and Role of District TB Officer.</em> ntep.in</div></div>
+  <div class="src-item"><div class="src-n">10</div><div>Census of India 2011. <em>Sub-district administrative boundaries, Rajasthan.</em> Office of the Registrar General.</div></div>
+</div>
+
+<footer>
+  <div class="ft-l">Where the Wind Dies · Dr. Kush Bandwal · NID Bengaluru · Map-in-App Studio · 2025</div>
+  <div class="ft-r">Continue: the atlas →</div>
+</footer>
+
+
+<script>
+// ═══════════════════════════════════════════════════════
+// HORIZONTAL SCROLL ENGINE
+// Each .hscroll-host has height = n*100vh
+// The pinned .hscroll-pin stays at top:0 for that entire height
+// We map scroll progress through the host to slide index
+// ═══════════════════════════════════════════════════════
+
+function setupHscroll(pin) {
+  const host   = pin.parentElement;
+  const track  = pin.querySelector('.hscroll-track');
+  const n      = parseInt(pin.dataset.slides) || 2;
+  const id     = pin.dataset.id;
+
+  // Create dot containers inside each slide
+  for (let i = 0; i < n; i++) {
+    const slide = track.children[i];
+    // Remove any existing dot containers in this slide
+    const existing = slide.querySelector('.sl-dots');
+    if (existing) {
+      // build dots
+      for (let j = 0; j < n; j++) {
+        const d = document.createElement('div');
+        d.className = 'sl-dot' + (j === 0 ? ' on' : '');
+        existing.appendChild(d);
+      }
+    }
+  }
+
+  function update() {
+    const hostRect = host.getBoundingClientRect();
+    // hostRect.top goes from 0 → -(n-1)*100vh as you scroll through
+    const scrolled = -hostRect.top;
+    const maxScroll = host.offsetHeight - window.innerHeight;
+    const progress = Math.max(0, Math.min(1, scrolled / maxScroll));
+
+    // Which slide? Divide progress evenly across n slides
+    const rawIdx = progress * n;
+    const idx = Math.min(n - 1, Math.floor(rawIdx));
+
+    // Translate track
+    track.style.transform = `translateX(-${idx * 100}vw)`;
+    track.style.transition = 'transform 0.6s cubic-bezier(0.65,0,0.35,1)';
+
+    // Update dots in all slides
+    for (let i = 0; i < n; i++) {
+      const slide = track.children[i];
+      const dots = slide.querySelector('.sl-dots');
+      if (!dots) continue;
+      const dotEls = dots.querySelectorAll('.sl-dot');
+      dotEls.forEach((d, j) => d.classList.toggle('on', j === idx));
+    }
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  window.addEventListener('resize', update, { passive: true });
+  update();
+}
+
+document.querySelectorAll('.hscroll-pin').forEach(setupHscroll);
+
+// ═══════════════════════════════════════════════════════
+// FADE-IN ON SCROLL
+// ═══════════════════════════════════════════════════════
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('on'); });
+}, { threshold: 0.07, rootMargin: '0px 0px -40px 0px' });
+
+document.querySelectorAll('.fi').forEach(el => io.observe(el));
+</script>
+</body>
+</html>

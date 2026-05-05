@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Where the Wind Dies — Atlas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+/* ─────────────────────────────────────────
+   DESIGN TOKENS
+   Colour philosophy: ONE accent (blue or orange via toggle).
+   Severity uses opacity/saturation variants of the same ink,
+   plus a single semantic red for critical-only callouts.
+   Everything else is greyscale.
+───────────────────────────────────────── */
+:root{
+  /* Accent — blue default */
+  --a:   #1A44C4;
+  --a2:  #2D5CE8;
+  --ap:  #EDF1FD;
+  --at:  #1238A8;
+
+  /* Surface */
+  --bg:   #F5F6F8;
+  --card: #FFFFFF;
+  --ink:  #0C0F1A;
+  --ink2: #2E3244;
+  --ink3: #5E6278;
+  --ink4: #9096AA;
+  --ln:   #E2E4EC;
+  --ln2:  #C8CBDA;
+
+  /* Severity — ink-based tiers, not multi-colour */
+  --s4-c: #B91C1C; --s4-bg: #FEF2F2;   /* critical: single red */
+  --s3-c: #7C5A0A; --s3-bg: #FEFCE8;   /* high: dark amber */
+  --s2-c: #1A44C4; --s2-bg: #EDF1FD;   /* moderate: accent blue */
+  --s1-c: #374151; --s1-bg: #F3F4F6;   /* low: neutral */
+
+  --fn: 'DM Sans', system-ui, sans-serif;
+  --mo: 'DM Mono', monospace;
+  --r: 10px; --rsm: 6px;
+}
+.ot{
+  --a: #B84C14; --a2: #D05A18; --ap: #FDF2EC; --at: #9A3D0E;
+  --s2-c:#B84C14; --s2-bg:#FDF2EC;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--fn);background:var(--bg);color:var(--ink);
+  height:100vh;overflow:hidden;font-size:13px;
+  -webkit-font-smoothing:antialiased;line-height:1.5;
+}
+
+/* ── TOP BAR ── */
+.top{
+  height:48px;background:var(--card);border-bottom:1px solid var(--ln);
+  position:fixed;top:0;left:0;right:0;z-index:400;
+  display:flex;align-items:center;padding:0 14px;gap:10px;
+}
+.brand{display:flex;align-items:center;gap:9px;flex-shrink:0}
+.bn{font-size:13px;font-weight:600;color:var(--ink);letter-spacing:-.01em;line-height:1.25}
+.bs{font-size:9px;color:var(--ink3);font-weight:400}
+.vsep{width:1px;height:18px;background:var(--ln);flex-shrink:0}
+
+/* District tabs */
+.dtabs{
+  display:flex;gap:2px;background:var(--bg);border-radius:8px;
+  padding:3px;flex:1;max-width:380px;margin:0 auto;
+}
+.dt{
+  flex:1;padding:4px 0;border-radius:6px;border:none;
+  background:transparent;font-family:var(--fn);font-size:11px;
+  font-weight:500;color:var(--ink3);cursor:pointer;transition:all .14s;white-space:nowrap;
+}
+.dt:hover{color:var(--ink)}
+.dt.on{background:var(--card);color:var(--a);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+.tright{display:flex;align-items:center;gap:7px;margin-left:auto;flex-shrink:0}
+.cbtn{
+  display:flex;align-items:center;gap:5px;padding:5px 10px;
+  border:1px solid var(--ln2);border-radius:7px;background:transparent;
+  font-family:var(--fn);font-size:11px;font-weight:500;color:var(--ink3);
+  cursor:pointer;transition:all .14s;text-decoration:none;white-space:nowrap;
+}
+.cbtn:hover{background:var(--bg);color:var(--ink)}
+.tsw{width:8px;height:8px;border-radius:50%;background:var(--a);transition:background .3s}
+.ntag{font-family:var(--mo);font-size:9px;color:var(--ink4);letter-spacing:.03em}
+
+/* ── LAYOUT ── */
+.shell{
+  position:fixed;top:48px;bottom:48px;left:0;right:0;
+  display:grid;grid-template-columns:196px 1fr 276px;
+}
+
+/* ── LEFT PANEL ── */
+.lp{background:var(--card);border-right:1px solid var(--ln);display:flex;flex-direction:column;overflow:hidden}
+.ls{padding:12px 13px 10px;border-bottom:1px solid var(--ln)}
+.slbl{font-family:var(--mo);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink2);margin-bottom:9px;font-weight:500}
+
+/* KPIs */
+.kst{display:flex;flex-direction:column;gap:7px}
+.kr{display:flex;justify-content:space-between;align-items:baseline}
+.kk{font-size:12px;color:var(--ink3);line-height:1.4;font-weight:400}
+.kv{font-family:var(--mo);font-size:16px;font-weight:500;color:var(--ink);letter-spacing:-.02em}
+.kv.r{color:var(--s4-c)} .kv.o{color:var(--s3-c)} .kv.g{color:#166534}
+
+/* Signal toggles */
+.sigl{display:flex;flex-direction:column;gap:3px}
+.sr{
+  display:flex;align-items:flex-start;gap:8px;padding:8px 8px;
+  border-radius:var(--rsm);border:1px solid transparent;cursor:pointer;
+  transition:all .12s;user-select:none;
+}
+.sr:hover{background:var(--bg)}
+.sr.on{background:var(--ap);border-color:rgba(26,68,196,.14)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--ln2);flex-shrink:0;transition:background .15s;margin-top:4px}
+.sr.on .sdot{background:var(--a)}
+.stxt{flex:1;min-width:0}
+.sn{font-size:12px;font-weight:500;color:var(--ink2);line-height:1.35}
+.sh{font-size:10px;color:var(--ink3);margin-top:3px;display:none;line-height:1.45;font-weight:400}
+.sr.on .sn{color:var(--at)}
+.sr.on .sh{display:block}
+.sr:hover .sh{display:block}
+.stog{
+  width:26px;height:14px;background:var(--ln2);border-radius:7px;
+  position:relative;flex-shrink:0;transition:background .15s;margin-top:2px;
+}
+.stog::after{
+  content:'';position:absolute;width:10px;height:10px;border-radius:50%;
+  background:#fff;top:2px;left:2px;transition:left .15s;
+  box-shadow:0 1px 2px rgba(0,0,0,.15);
+}
+.sr.on .stog{background:var(--a)}
+.sr.on .stog::after{left:14px}
+
+/* Legend */
+.legb{height:6px;border-radius:3px;margin-bottom:5px}
+.legl{display:flex;justify-content:space-between;font-family:var(--mo);font-size:9px;color:var(--ink3);font-weight:400}
+
+/* Block list */
+.blhdr{
+  padding:7px 14px 5px;font-family:var(--mo);font-size:9px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);
+  border-bottom:1px solid var(--ln);display:flex;justify-content:space-between;font-weight:500;
+}
+.bscr{flex:1;overflow-y:auto}
+.bscr::-webkit-scrollbar{width:2px}
+.bscr::-webkit-scrollbar-thumb{background:var(--ln2)}
+.bi{
+  padding:9px 14px;border-bottom:1px solid var(--ln);cursor:pointer;
+  display:flex;align-items:center;gap:8px;transition:background .1s;
+}
+.bi:hover{background:var(--bg)}
+.bi.sel{background:var(--ap);border-left:2px solid var(--a);padding-left:12px}
+.brk{font-family:var(--mo);font-size:9px;color:var(--ink3);width:14px;flex-shrink:0;text-align:right;font-weight:400}
+.binf{flex:1;min-width:0}
+.bn2{font-size:12px;font-weight:500;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bps{display:flex;gap:2px;margin-top:3px}
+.bp{width:6px;height:4px;border-radius:1px}
+.bpct{font-family:var(--mo);font-size:12px;font-weight:500;flex-shrink:0}
+
+/* ── MAP ── */
+.mz{position:relative;background:#DDE4F0}
+#map{width:100%;height:100%}
+.mlbl{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  background:var(--card);border:1px solid var(--ln);border-radius:20px;
+  padding:5px 14px;font-size:12px;font-weight:500;color:var(--ink2);
+  z-index:200;pointer-events:none;box-shadow:0 1px 5px rgba(0,0,0,.07);white-space:nowrap;
+}
+.mft{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  background:rgba(255,255,255,.84);border:1px solid var(--ln);border-radius:5px;
+  padding:3px 10px;font-family:var(--mo);font-size:9px;color:var(--ink3);
+  z-index:200;pointer-events:none;backdrop-filter:blur(4px);white-space:nowrap;
+}
+
+/* Leaflet */
+.leaflet-container{background:#D8E2F0!important;font-family:var(--fn)!important}
+.leaflet-control-zoom{border:1px solid var(--ln2)!important;border-radius:8px!important;overflow:hidden}
+.leaflet-control-zoom a{color:var(--ink2)!important;font-size:15px!important}
+.leaflet-control-attribution{display:none}
+.leaflet-popup-content-wrapper{
+  background:var(--ink)!important;border-radius:11px!important;
+  box-shadow:0 6px 24px rgba(0,0,0,.22)!important;border:none!important;padding:0!important;
+}
+.leaflet-popup-content{margin:0!important;min-width:195px}
+.leaflet-popup-tip{background:var(--ink)!important}
+.leaflet-popup-close-button{color:rgba(255,255,255,.3)!important;top:6px!important;right:8px!important}
+
+.pu{padding:13px 15px}
+.pun{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px}
+.pud{font-family:var(--mo);font-size:8px;letter-spacing:.07em;color:rgba(255,255,255,.3);text-transform:uppercase;margin-bottom:8px}
+.pur{border-top:1px solid rgba(255,255,255,.08);padding-top:7px;display:flex;flex-direction:column;gap:3px}
+.prw{display:flex;justify-content:space-between;font-size:11px;color:rgba(255,255,255,.42)}
+.prw b{color:#fff;font-weight:500}
+.pti{padding-top:7px;font-size:9px;color:rgba(255,255,255,.18);font-style:italic}
+
+/* ── RIGHT PANEL ── */
+.rp{background:var(--card);border-left:1px solid var(--ln);display:flex;flex-direction:column;overflow:hidden}
+.remp{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px 18px;text-align:center;gap:7px}
+.reico{width:40px;height:40px;border:1px solid var(--ln2);border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink4);font-size:17px;margin-bottom:2px}
+.ret{font-size:12px;font-weight:500;color:var(--ink2)}
+.res{font-size:11px;color:var(--ink4);line-height:1.55}
+
+.rdet{display:none;flex-direction:column;height:100%;overflow:hidden}
+.rdet.on{display:flex}
+
+/* Detail head — white background, high contrast */
+.dh{padding:16px 16px 14px;background:var(--card);border-bottom:1px solid var(--ln);flex-shrink:0}
+.dbc{font-family:var(--mo);font-size:10px;letter-spacing:.07em;color:var(--ink3);text-transform:uppercase;margin-bottom:5px}
+.dna{font-size:20px;font-weight:600;color:var(--ink);letter-spacing:-.01em;margin-bottom:10px}
+.drr{display:flex;align-items:flex-end;gap:12px;margin-bottom:10px}
+.drt{font-family:var(--mo);font-size:40px;font-weight:500;line-height:1;letter-spacing:-.04em;color:var(--ink)}
+.drm{font-size:12px;color:var(--ink3);line-height:1.6;padding-bottom:2px}
+.ddf{display:block;font-weight:600;font-size:13px}
+.ddf.p{color:#B91C1C} .ddf.n{color:#166534}
+.dsb{display:inline-flex;align-items:center;padding:4px 11px;border-radius:20px;font-family:var(--mo);font-size:10px;font-weight:500}
+
+/* Detail body */
+.dbody{flex:1;overflow-y:auto}
+.dbody::-webkit-scrollbar{width:2px}
+.dbody::-webkit-scrollbar-thumb{background:var(--ln2)}
+.dsc{padding:13px 16px;border-bottom:1px solid var(--ln)}
+.dsch{font-family:var(--mo);font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:10px;font-weight:500}
+
+/* Stats */
+.sg{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.sc{background:var(--bg);border-radius:var(--rsm);padding:10px 8px;text-align:center}
+.sv{font-family:var(--mo);font-size:15px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.sk{font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);line-height:1.3}
+
+/* Scorecard */
+.scl{display:flex;flex-direction:column;gap:8px}
+.scr{display:flex;align-items:center;gap:7px}
+.scnm{font-size:11px;color:var(--ink2);width:84px;flex-shrink:0;line-height:1.3;font-weight:500}
+.scbw{flex:1;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.scbf{height:100%;border-radius:2px;transition:width .55s cubic-bezier(.25,1,.5,1)}
+.scvl{font-family:var(--mo);font-size:11px;font-weight:500;color:var(--ink);width:32px;text-align:right;flex-shrink:0}
+.scbd{
+  font-family:var(--mo);font-size:9px;font-weight:500;
+  padding:2px 5px;border-radius:3px;width:42px;text-align:center;flex-shrink:0;
+}
+.scbd.c4{background:var(--s4-bg);color:var(--s4-c)}
+.scbd.c3{background:var(--s3-bg);color:var(--s3-c)}
+.scbd.c2{background:var(--s2-bg);color:var(--s2-c)}
+.scbd.c1{background:var(--s1-bg);color:var(--s1-c)}
+
+/* Driver */
+.dvr{background:var(--bg);border-left:2px solid var(--ink2);border-radius:0 var(--rsm) var(--rsm) 0;padding:11px 13px}
+.dvrl{font-family:var(--mo);font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:5px}
+.dvrt{font-size:12px;color:var(--ink);line-height:1.65;font-weight:400}
+
+/* Response */
+.rsp{display:flex;flex-direction:column;gap:5px}
+.ri{display:flex;gap:7px;padding:10px 12px;background:var(--bg);border-radius:var(--rsm)}
+.rtag{font-family:var(--mo);font-size:9px;font-weight:500;padding:3px 7px;background:var(--ap);color:var(--at);border-radius:3px;flex-shrink:0;white-space:nowrap;margin-top:1px;height:fit-content}
+.rtxt{font-size:12px;color:var(--ink);line-height:1.55;font-weight:400}
+
+/* ── BOTTOM BAR ── two stats only, clean ── */
+.bot{
+  position:fixed;bottom:0;left:0;right:0;height:48px;
+  background:#1A1E2E;border-top:1px solid rgba(255,255,255,.08);
+  display:flex;align-items:stretch;z-index:400;
+}
+.bbit{flex:1;display:flex;align-items:center;padding:0 16px;gap:8px;border-right:1px solid rgba(255,255,255,.08)}
+.bbit:last-child{border-right:none}
+.bbk{font-family:var(--mo);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.45);white-space:nowrap;font-weight:400}
+.bbv{font-family:var(--mo);font-size:18px;font-weight:500;color:#fff;letter-spacing:-.02em}
+.bbv.note{font-size:10px;color:rgba(255,255,255,.35);font-weight:400;letter-spacing:.01em;line-height:1.5}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <img src="https://play-lh.googleusercontent.com/TK1AUhjxDNqSfQHEfh1IjwTuruGOmVBbdHaWRPWyKZuMhUlWm2JlyC6EWMb18F7L6Ec" alt="Nikshay" style="width:36px;height:36px;border-radius:8px;object-fit:cover;flex-shrink:0">
+    <div><div class="bn">Nikshay</div><div class="bs">TB Dropout Risk Atlas · India NTEP</div></div>
+  </div>
+  <div class="vsep"></div>
+  <div class="dtabs" id="dtabs"></div>
+  <div class="tright">
+    <button class="cbtn" onclick="toggleTheme()"><div class="tsw" id="tsw"></div><span id="tlbl">Orange mode</span></button>
+    <a href="where-the-wind-dies-doc.html" class="cbtn">← Process doc</a>
+    <div class="ntag">NTEP · Nikshay · 2022–23</div>
+  </div>
+</header>
+
+<div class="shell">
+  <aside class="lp">
+    <div class="ls"><div class="slbl">District overview</div><div class="kst" id="kpis"></div></div>
+    <div class="ls">
+      <div class="slbl">Diagnose by cause</div>
+      <div style="font-size:11px;color:var(--ink3);margin-bottom:9px;line-height:1.5;font-weight:400">Toggle to see which blocks cluster around a specific dropout cause — not just <em>how bad</em>, but <em>why</em>.</div>
+      <div class="sigl" id="sigs"></div>
+    </div>
+    <div class="ls">
+      <div class="slbl">Colour scale</div>
+      <div class="legb" id="legb" style="background:linear-gradient(to right,#EDF1FD,#93AAEE,#1A44C4,#B91C1C)"></div>
+      <div class="legl" id="legl"><span>&lt;8%</span><span>Dropout rate</span><span>&gt;27%</span></div>
+    </div>
+    <div class="blhdr"><span>Blocks — dropout rank</span><span id="bcnt"></span></div>
+    <div class="bscr"><div id="blist"></div></div>
+  </aside>
+
+  <div class="mz">
+    <div class="mlbl" id="mlbl">Viewing: Dropout Rate</div>
+    <div id="map"></div>
+    <div class="mft">Proof of concept · illustrative data · pending Nikshay API · © OpenStreetMap</div>
+  </div>
+
+  <aside class="rp">
+    <div class="remp" id="remp">
+      <div class="reico">◎</div>
+      <div class="ret">No block selected</div>
+      <div class="res">Click a block on the map or from the list to see its dropout diagnosis and suggested field response.</div>
+    </div>
+    <div class="rdet" id="rdet"></div>
+  </aside>
+</div>
+
+<div class="bot">
+  <div class="bbit"><div class="bbk">Avg Dropout</div><div class="bbv" id="k1">—</div></div>
+  <div class="bbit"><div class="bbk">Critical Blocks</div><div class="bbv" id="k2">—</div></div>
+  <div class="bbit"><div class="bbk">Patients at Risk</div><div class="bbv" id="k3">—</div></div>
+  <div class="bbit"><div class="bbk">District TSR</div><div class="bbv" id="k4">—</div></div>
+  <div class="bbit"><div class="bbv note">Proof of concept · illustrative data · pending Nikshay API</div></div>
+</div>
+
+<script>
+/* ── DATA ── */
+const DATA={
+  udaipur:{name:'Udaipur',state:'Rajasthan',tsr:84,center:[24.585,73.712],zoom:9,
+    blocks:[
+      {id:'u1',name:'Girwa',lat:24.58,lng:73.71,dropout:9,patients:1240,dmc_km:4,migration:18,dbt_gap:22,retreatment:14,private_pct:42,dmc:[[24.62,73.68],[24.57,73.73]]},
+      {id:'u2',name:'Badgaon',lat:24.72,lng:73.65,dropout:11,patients:820,dmc_km:9,migration:21,dbt_gap:26,retreatment:16,private_pct:34,dmc:[[24.73,73.66]]},
+      {id:'u3',name:'Kurabad',lat:24.45,lng:73.58,dropout:13,patients:710,dmc_km:16,migration:24,dbt_gap:31,retreatment:17,private_pct:28,dmc:[[24.47,73.60]]},
+      {id:'u4',name:'Mavli',lat:24.76,lng:73.85,dropout:14,patients:890,dmc_km:18,migration:28,dbt_gap:38,retreatment:19,private_pct:24,dmc:[[24.77,73.87]]},
+      {id:'u5',name:'Gogunda',lat:24.66,lng:73.47,dropout:19,patients:620,dmc_km:29,migration:31,dbt_gap:41,retreatment:21,private_pct:16,dmc:[[24.68,73.49]]},
+      {id:'u6',name:'Vallabhnagar',lat:24.50,lng:73.88,dropout:18,patients:760,dmc_km:24,migration:22,dbt_gap:44,retreatment:24,private_pct:18,dmc:[[24.52,73.91]]},
+      {id:'u7',name:'Lasadiya',lat:24.32,lng:73.95,dropout:22,patients:490,dmc_km:31,migration:19,dbt_gap:52,retreatment:26,private_pct:11,dmc:[[24.34,73.97]]},
+      {id:'u8',name:'Salumbar',lat:24.18,lng:74.05,dropout:26,patients:680,dmc_km:38,migration:15,dbt_gap:61,retreatment:28,private_pct:9,dmc:[[24.20,74.08]]},
+      {id:'u9',name:'Jhadol',lat:24.40,lng:73.38,dropout:28,patients:430,dmc_km:44,migration:14,dbt_gap:64,retreatment:31,private_pct:6,dmc:[[24.42,73.40]]},
+      {id:'u10',name:'Rishabhdev',lat:23.95,lng:73.62,dropout:29,patients:360,dmc_km:48,migration:10,dbt_gap:71,retreatment:27,private_pct:5,dmc:[[23.97,73.64]]},
+      {id:'u11',name:'Kherwara',lat:24.02,lng:73.45,dropout:31,patients:540,dmc_km:52,migration:12,dbt_gap:68,retreatment:22,private_pct:7,dmc:[[24.04,73.47]]},
+      {id:'u12',name:'Kotra',lat:23.80,lng:73.20,dropout:34,patients:310,dmc_km:61,migration:8,dbt_gap:74,retreatment:29,private_pct:4,dmc:[[23.82,73.23]]},
+    ]},
+  delhi:{name:'South Delhi',state:'Delhi',tsr:88,center:[28.512,77.222],zoom:12,
+    blocks:[
+      {id:'d1',name:'Greater Kailash',lat:28.550,lng:77.238,dropout:6,patients:1400,dmc_km:2,migration:28,dbt_gap:11,retreatment:8,private_pct:79,dmc:[[28.553,77.241]]},
+      {id:'d2',name:'Saket',lat:28.521,lng:77.209,dropout:7,patients:1800,dmc_km:2,migration:34,dbt_gap:14,retreatment:9,private_pct:74,dmc:[[28.523,77.211]]},
+      {id:'d3',name:'Hauz Khas',lat:28.543,lng:77.200,dropout:8,patients:2100,dmc_km:2,migration:42,dbt_gap:18,retreatment:11,private_pct:68,dmc:[[28.545,77.202]]},
+      {id:'d4',name:'Malviya Nagar',lat:28.533,lng:77.220,dropout:9,patients:2200,dmc_km:2,migration:38,dbt_gap:19,retreatment:13,private_pct:62,dmc:[[28.535,77.222]]},
+      {id:'d5',name:'Mehrauli',lat:28.499,lng:77.185,dropout:13,patients:3400,dmc_km:3,migration:58,dbt_gap:24,retreatment:18,private_pct:54,dmc:[[28.501,77.188]]},
+      {id:'d6',name:'Kalkaji',lat:28.536,lng:77.260,dropout:16,patients:3100,dmc_km:3,migration:62,dbt_gap:28,retreatment:19,private_pct:43,dmc:[[28.538,77.263]]},
+      {id:'d7',name:'Sangam Vihar',lat:28.510,lng:77.260,dropout:19,patients:4800,dmc_km:5,migration:71,dbt_gap:39,retreatment:22,private_pct:31,dmc:[[28.513,77.264]]},
+      {id:'d8',name:'Ambedkar Nagar',lat:28.522,lng:77.248,dropout:22,patients:4200,dmc_km:4,migration:68,dbt_gap:42,retreatment:26,private_pct:28,dmc:[[28.525,77.251]]},
+      {id:'d9',name:'Tughlakabad',lat:28.496,lng:77.276,dropout:24,patients:5100,dmc_km:6,migration:74,dbt_gap:46,retreatment:29,private_pct:22,dmc:[[28.499,77.280]]},
+    ]},
+  muzaffarpur:{name:'Muzaffarpur',state:'Bihar',tsr:75,center:[26.100,85.390],zoom:10,
+    blocks:[
+      {id:'m1',name:'Urban',lat:26.12,lng:85.39,dropout:14,patients:3200,dmc_km:2,migration:34,dbt_gap:48,retreatment:22,private_pct:21,dmc:[[26.13,85.40]]},
+      {id:'m2',name:'Mushari',lat:26.14,lng:85.47,dropout:18,patients:2100,dmc_km:8,migration:31,dbt_gap:54,retreatment:25,private_pct:16,dmc:[[26.15,85.48]]},
+      {id:'m3',name:'Maniyari',lat:26.06,lng:85.28,dropout:21,patients:1180,dmc_km:17,migration:26,dbt_gap:58,retreatment:28,private_pct:11,dmc:[[26.07,85.30]]},
+      {id:'m4',name:'Saraiya',lat:26.20,lng:85.38,dropout:22,patients:1800,dmc_km:14,migration:28,dbt_gap:62,retreatment:29,private_pct:12,dmc:[[26.21,85.40]]},
+      {id:'m5',name:'Kurhani',lat:26.09,lng:85.52,dropout:23,patients:990,dmc_km:21,migration:20,dbt_gap:63,retreatment:30,private_pct:9,dmc:[[26.10,85.54]]},
+      {id:'m6',name:'Sakra',lat:26.02,lng:85.42,dropout:24,patients:1050,dmc_km:19,migration:24,dbt_gap:66,retreatment:31,private_pct:9,dmc:[[26.03,85.44]]},
+      {id:'m7',name:'Aurai',lat:26.24,lng:85.50,dropout:28,patients:880,dmc_km:24,migration:18,dbt_gap:72,retreatment:34,private_pct:7,dmc:[[26.25,85.52]]},
+      {id:'m8',name:'Paru',lat:26.17,lng:85.30,dropout:27,patients:840,dmc_km:29,migration:17,dbt_gap:69,retreatment:35,private_pct:6,dmc:[[26.18,85.32]]},
+      {id:'m9',name:'Kanti',lat:25.97,lng:85.38,dropout:26,patients:1400,dmc_km:22,migration:19,dbt_gap:71,retreatment:33,private_pct:8,dmc:[[25.98,85.40]]},
+      {id:'m10',name:'Minapur',lat:26.28,lng:85.24,dropout:29,patients:920,dmc_km:31,migration:16,dbt_gap:74,retreatment:36,private_pct:7,dmc:[[26.29,85.26]]},
+      {id:'m11',name:'Bochahan',lat:26.03,lng:85.60,dropout:31,patients:1100,dmc_km:28,migration:22,dbt_gap:78,retreatment:38,private_pct:6,dmc:[[26.04,85.62]]},
+      {id:'m12',name:'Gaighat',lat:26.11,lng:85.18,dropout:33,patients:760,dmc_km:36,migration:14,dbt_gap:81,retreatment:41,private_pct:4,dmc:[[26.12,85.20]]},
+    ]},
+};
+
+const SIGS=[
+  {key:'dmc_km',   name:'Is distance the issue?',      unit:'km',max:70,inv:false,hint:'Darker = farther from nearest DOTS centre. >10 km correlates strongly with dropout.',   thr:[[8,'c1'],[20,'c2'],[35,'c3'],[999,'c4']]},
+  {key:'migration',name:'Is migration the issue?',     unit:'%', max:80,inv:false,hint:'Darker = more seasonal migrant patients. They vanish from Nikshay when they move.',    thr:[[20,'c1'],[35,'c2'],[55,'c3'],[999,'c4']]},
+  {key:'dbt_gap',  name:'Are payments failing?',       unit:'%', max:90,inv:false,hint:'Darker = more patients missing ₹500/mo DBT support. Dropout follows within 4–8 weeks.',thr:[[25,'c1'],[45,'c2'],[60,'c3'],[999,'c4']]},
+  {key:'retreatment',name:'High retreatment burden?',  unit:'%', max:50,inv:false,hint:'Darker = more Cat II (prior defaulter) patients. LTFU peaks at days 45–90.',           thr:[[15,'c1'],[22,'c2'],[30,'c3'],[999,'c4']]},
+  {key:'private_pct',name:'Single facility risk?',     unit:'%', max:90,inv:true, hint:'Darker = fewer private options. Patients with no alternative pathway when public fails.',thr:[[20,'c4'],[35,'c3'],[55,'c2'],[999,'c1']]},
+];
+
+const DIAG={
+  dmc_km:b=>`DMC is ${b.dmc_km} km from this block's population centre. Patients travel this distance multiple times weekly for DOTS medication. LTFU rises sharply beyond 10 km — with peaks in summer and monsoon when roads become impassable.`,
+  migration:b=>`${b.migration}% of patients are seasonal migrants — the highest-risk LTFU group nationally. When workers move districts, their Nikshay address becomes invalid, follow-up stops, and the system classifies them as lost.`,
+  dbt_gap:b=>`${b.dbt_gap}% of patients have gaps in Nikshay Poshan Yojana payments (₹500/month nutritional support). Evidence links missed DBT payments to dropout within 4–8 weeks for malnourished patients.`,
+  retreatment:b=>`${b.retreatment}% retreatment proportion signals significant Cat II patient burden. LTFU peaks between days 45–90 of the intensive phase — when side effects are most pronounced and motivation fades.`,
+  private_pct:b=>`Only ${b.private_pct}% private sector share creates a single point of failure. Patients transitioning from private initiation to public DOTS show significantly higher LTFU than those who stay in one system.`,
+};
+const RESP={
+  dmc_km:[{tag:'Structural',txt:'Identify PHC within 10 km for satellite DOTS delivery. Coordinate with DHO to designate an additional medication pickup point.'},{tag:'Field',txt:'Map quarterly patient travel routes. Prioritise satellite pickup for patients beyond 20 km.'}],
+  migration:[{tag:'Admin',txt:'Flag all migrant patients in Nikshay at registration. Initiate inter-district transfer record before patient leaves.'},{tag:'Field',txt:'Coordinate with destination ASHA via State TB Officer before peak migration months (Oct–Mar).'}],
+  dbt_gap:[{tag:'Admin',txt:'Conduct DBT payment audit. Identify patients with 2+ missed months and escalate to DTO for manual clearance.'},{tag:'Field',txt:'ASHA to verify bank account linkage at treatment initiation — incorrect details are the most common DBT failure cause.'}],
+  retreatment:[{tag:'Clinical',txt:'All Cat II retreatment patients need intensified counselling in weeks 6–12. Increase ASHA contact frequency during this window.'},{tag:'Field',txt:'Assign a named ASHA to each retreatment patient. Weekly home visits during intensive phase reduce LTFU by ~30%.'}],
+  private_pct:[{tag:'Structural',txt:'Map all private notifying providers. Establish formal handover protocol so treatment cards transfer smoothly to public facilities.'},{tag:'Field',txt:'At public registration, counsel patients that treatment quality is equivalent — the transition moment is where most dropout occurs.'}],
+};
+
+/* ── STATE ── */
+let cur='udaipur',selB=null,actSig=null,isOrange=false;
+let map,circles={},extras=[];
+
+/* ── COLOUR HELPERS
+   Single accent scale: low=light blue, high=deep blue, critical=red
+   We avoid green/orange/multi-hue entirely for map circles.
+   Only the severity labels in right panel use semantic colour.
+── */
+function bScaleColor(d){
+  // 5-stop scale: light blue → mid blue → blue → deep blue → red
+  if(d<=8)  return '#C7D7F8';
+  if(d<=14) return '#7FA8F0';
+  if(d<=19) return '#3B72E0';
+  if(d<=27) return '#1A44C4';
+  return '#B91C1C';
+}
+function sigScaleColor(b,sig){
+  const s=SIGS.find(x=>x.key===sig);if(!s)return'#aaa';
+  const f=Math.min(b[sig]/s.max,1);
+  const idx=s.inv?Math.floor((1-f)*4):Math.floor(f*4);
+  const pal=['#C7D7F8','#7FA8F0','#3B72E0','#1A44C4','#B91C1C'];
+  return pal[Math.min(idx,4)];
+}
+function blockC(b){return actSig?sigScaleColor(b,actSig):bScaleColor(b.dropout)}
+
+function sevBg(d){
+  if(d>27)return['#FEF2F2','#B91C1C'];
+  if(d>19)return['#FEFCE8','#7C5A0A'];
+  if(d>=14)return['#EDF1FD','#1A44C4'];
+  return['#F3F4F6','#374151'];
+}
+function sevLbl(d){return d>27?'Critical':d>19?'High':d>=14?'Moderate':'Low'}
+
+function lvl(v,k){const s=SIGS.find(x=>x.key===k);if(!s)return'c1';for(const[m,l]of s.thr)if(v<=m)return l;return'c1'}
+function lvlBar(l){
+  return{c4:'#B91C1C',c3:'#1A44C4',c2:'#7FA8F0',c1:'#C7D7F8'}[l]||'#ccc';
+}
+function pDriver(b){
+  const sc={
+    dmc_km:b.dmc_km>30?3:b.dmc_km>18?1:0,
+    migration:b.migration>55?3:b.migration>35?2:0,
+    dbt_gap:b.dbt_gap>60?3:b.dbt_gap>45?2:0,
+    retreatment:b.retreatment>30?3:b.retreatment>22?2:0,
+    private_pct:b.private_pct<15?3:b.private_pct<25?2:0,
+  };
+  return Object.entries(sc).sort((a,z)=>z[1]-a[1])[0][0];
+}
+function bR(){return{udaipur:11000,delhi:1900,muzaffarpur:5500}[cur]||7000}
+
+/* ── MAP ── */
+function initMap(){
+  map=L.map('map',{zoomControl:true,attributionControl:false});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(map);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png',{maxZoom:19,opacity:0.45}).addTo(map);
+  map.setView(DATA[cur].center,DATA[cur].zoom);
+  drawBlocks();
+}
+
+function clearMap(){
+  Object.values(circles).forEach(c=>map.removeLayer(c));circles={};
+  extras.forEach(e=>map.removeLayer(e));extras=[];
+}
+
+function drawBlocks(){
+  clearMap();
+  const d=DATA[cur];const r=bR();
+  d.blocks.forEach(b=>{
+    const fill=blockC(b);const sel=selB?.id===b.id;
+    const c=L.circle([b.lat,b.lng],{
+      radius:r,
+      color:sel?'#0C0F1A':'rgba(255,255,255,.45)',
+      weight:sel?2.5:0.8,
+      fillColor:fill,
+      fillOpacity:sel?0.88:0.72,
+    });
+    c.bindPopup(`<div class="pu"><div class="pun">${b.name}</div><div class="pud">${d.name} · ${d.state}</div><div class="pur"><div class="prw">Dropout rate <b>${b.dropout}%</b></div><div class="prw">Patients on DOTS <b>${b.patients.toLocaleString()}</b></div><div class="prw">DMC distance <b>${b.dmc_km} km</b></div><div class="prw">DBT payment gap <b>${b.dbt_gap}%</b></div></div><div class="pti">Click to diagnose →</div></div>`,{maxWidth:215,offset:[0,-6]});
+    c.on('click',()=>selBlock(b));
+    c.on('mouseover',function(){this.openPopup()});
+    c.addTo(map);circles[b.id]=c;
+
+    // Label
+    const lbl=L.divIcon({
+      html:`<div style="text-align:center;pointer-events:none;white-space:nowrap">
+        <div style="font-family:'DM Sans',sans-serif;font-size:10px;font-weight:600;color:#0C0F1A;text-shadow:0 0 4px rgba(255,255,255,.97),0 0 10px rgba(255,255,255,.88)">${b.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:500;color:${fill};text-shadow:0 0 4px rgba(255,255,255,.98),0 0 12px rgba(255,255,255,.92)">${actSig?b[actSig]+(SIGS.find(s=>s.key===actSig)?.unit||''):b.dropout+'%'}</div>
+      </div>`,
+      className:'',iconSize:[80,26],iconAnchor:[40,13],
+    });
+    const lm=L.marker([b.lat,b.lng],{icon:lbl,interactive:false,zIndexOffset:20});lm.addTo(map);extras.push(lm);
+
+    // DMC markers + distance lines
+    if(b.dmc){
+      const accentC=isOrange?'#B84C14':'#1A44C4';
+      b.dmc.forEach(pt=>{
+        const ic=L.divIcon({html:`<div style="width:18px;height:18px;background:white;border:1.5px solid ${accentC};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:${accentC};box-shadow:0 1px 4px rgba(0,0,0,.12);font-family:'DM Mono',monospace">+</div>`,className:'',iconSize:[18,18],iconAnchor:[9,9]});
+        const dm=L.marker(pt,{icon:ic,zIndexOffset:60});
+        dm.bindPopup(`<div class="pu"><div class="pun" style="font-size:11px">DMC / DOTS Centre</div><div class="pud">${b.name} Block</div><div class="pur"><div class="prw">Distance from block centre <b>${b.dmc_km} km</b></div></div></div>`,{maxWidth:180});
+        dm.addTo(map);extras.push(dm);
+        if(b.dmc_km>14){
+          const ln=L.polyline([[b.lat,b.lng],pt],{color:accentC,weight:1.2,opacity:0.38,dashArray:'5,5'});
+          ln.addTo(map);extras.push(ln);
+        }
+      });
+    }
+  });
+}
+
+/* ── RENDER ── */
+function renderTabs(){
+  document.getElementById('dtabs').innerHTML=Object.entries(DATA).map(([k,d])=>
+    `<button class="dt${k===cur?' on':''}" onclick="selDist('${k}',this)">${d.name}</button>`
+  ).join('');
+}
+
+function renderKPIs(){
+  const bs=DATA[cur].blocks;
+  const avg=(bs.reduce((s,b)=>s+b.dropout,0)/bs.length).toFixed(1);
+  const crit=bs.filter(b=>b.dropout>27).length;
+  const risk=bs.reduce((s,b)=>s+Math.round(b.patients*b.dropout/100),0);
+  document.getElementById('kpis').innerHTML=`
+    <div class="kr"><span class="kk">Avg dropout rate</span><span class="kv ${parseFloat(avg)>18?'r':parseFloat(avg)>12?'o':'g'}">${avg}%</span></div>
+    <div class="kr"><span class="kk">Critical blocks (&gt;27%)</span><span class="kv r">${crit}/${bs.length}</span></div>
+    <div class="kr"><span class="kk">Patients at risk (est.)</span><span class="kv o">${risk.toLocaleString()}</span></div>
+    <div class="kr"><span class="kk">District TSR</span><span class="kv g">${DATA[cur].tsr}%</span></div>
+  `;
+  document.getElementById('k1').textContent=avg+'%';
+  document.getElementById('k2').textContent=`${crit}/${bs.length}`;
+  document.getElementById('k3').textContent=risk.toLocaleString();
+  document.getElementById('k4').textContent=DATA[cur].tsr+'%';
+}
+
+function renderSigs(){
+  document.getElementById('sigs').innerHTML=SIGS.map(s=>
+    `<div class="sr${actSig===s.key?' on':''}" onclick="togSig('${s.key}')">
+      <div class="sdot"></div>
+      <div class="stxt"><div class="sn">${s.name}</div><div class="sh">${s.hint}</div></div>
+      <div class="stog"></div>
+    </div>`
+  ).join('');
+}
+
+function renderList(){
+  const bs=[...DATA[cur].blocks].sort((a,b)=>b.dropout-a.dropout);
+  document.getElementById('bcnt').textContent=bs.length;
+  document.getElementById('blist').innerHTML=bs.map((b,i)=>{
+    const c=bScaleColor(b.dropout);
+    const sel=selB?.id===b.id?' sel':'';
+    const pips=SIGS.map(s=>`<div class="bp" style="background:${lvlBar(lvl(b[s.key],s.key))}" title="${s.name}"></div>`).join('');
+    return `<div class="bi${sel}" onclick="selBlock(DATA['${cur}'].blocks.find(x=>x.id==='${b.id}'))">
+      <div class="brk">${i+1}</div>
+      <div class="binf"><div class="bn2">${b.name}</div><div class="bps">${pips}</div></div>
+      <div class="bpct" style="color:${c}">${b.dropout}%</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDetail(){
+  const b=selB;
+  if(!b){document.getElementById('remp').style.display='flex';document.getElementById('rdet').classList.remove('on');return}
+  document.getElementById('remp').style.display='none';document.getElementById('rdet').classList.add('on');
+  const d=DATA[cur];
+  const avg=d.blocks.reduce((s,x)=>s+x.dropout,0)/d.blocks.length;
+  const diff=b.dropout-avg;
+  const dr=pDriver(b);
+  const [sbg,stx]=sevBg(b.dropout);
+  const lbl={c4:'Crit.',c3:'High',c2:'Med.',c1:'Low'};
+  document.getElementById('rdet').innerHTML=`
+    <div class="dh">
+      <div class="dbc">${d.state} · ${d.name} District</div>
+      <div class="dna">${b.name} Block</div>
+      <div class="drr">
+        <div class="drt">${b.dropout}%</div>
+        <div class="drm">Dropout rate<span class="ddf ${diff>=0?'p':'n'}">${diff>=0?'+':''}${diff.toFixed(1)}% vs district avg (${avg.toFixed(1)}%)</span></div>
+      </div>
+      <div class="dsb" style="background:${sbg};color:${stx}">${sevLbl(b.dropout)} risk</div>
+    </div>
+    <div class="dbody">
+      <div class="dsc">
+        <div class="dsch">Block statistics</div>
+        <div class="sg">
+          <div class="sc"><div class="sv">${b.patients.toLocaleString()}</div><div class="sk">Patients<br>on DOTS</div></div>
+          <div class="sc"><div class="sv">${d.tsr}%</div><div class="sk">District<br>TSR</div></div>
+          <div class="sc"><div class="sv">${b.retreatment}%</div><div class="sk">Retreat-<br>ment</div></div>
+        </div>
+      </div>
+      <div class="dsc">
+        <div class="dsch">Risk signals</div>
+        <div class="scl">
+          ${SIGS.map(s=>{
+            const l=lvl(b[s.key],s.key);
+            const pct=s.inv?Math.round((1-b[s.key]/s.max)*100):Math.round((b[s.key]/s.max)*100);
+            return `<div class="scr">
+              <div class="scnm">${s.name}</div>
+              <div class="scbw"><div class="scbf" style="width:${pct}%;background:${lvlBar(l)}"></div></div>
+              <div class="scvl">${b[s.key]}${s.unit}</div>
+              <div class="scbd ${l}">${lbl[l]}</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="dsc">
+        <div class="dsch">Primary driver</div>
+        <div class="dvr"><div class="dvrl">Most likely cause of dropout</div><div class="dvrt">${DIAG[dr](b)}</div></div>
+      </div>
+      <div class="dsc" style="border-bottom:none">
+        <div class="dsch">Suggested response</div>
+        <div class="rsp">${RESP[dr].map(r=>`<div class="ri"><div class="rtag">${r.tag}</div><div class="rtxt">${r.txt}</div></div>`).join('')}</div>
+      </div>
+    </div>
+  `;
+}
+
+/* ── INTERACTIONS ── */
+function selDist(k,btn){
+  cur=k;selB=null;actSig=null;
+  document.querySelectorAll('.dt').forEach(t=>t.classList.remove('on'));btn.classList.add('on');
+  document.getElementById('mlbl').textContent='Viewing: Dropout Rate';
+  resetLegend();
+  map.setView(DATA[cur].center,DATA[cur].zoom,{animate:true,duration:.8});
+  drawBlocks();renderKPIs();renderList();renderSigs();renderDetail();
+}
+function selBlock(b){
+  selB=b;
+  Object.entries(circles).forEach(([id,c])=>{
+    if(c.setStyle)c.setStyle({
+      weight:id===b.id?2.5:0.8,
+      color:id===b.id?'#0C0F1A':'rgba(255,255,255,.45)',
+      fillOpacity:id===b.id?0.88:0.72,
+    });
+  });
+  map.panTo([b.lat,b.lng],{animate:true,duration:.4});
+  renderList();renderDetail();
+}
+function togSig(key){
+  const was=actSig===key;actSig=was?null:key;
+  const s=SIGS.find(x=>x.key===key);
+  document.getElementById('mlbl').textContent=actSig?`Viewing: ${s.name}`:'Viewing: Dropout Rate';
+  if(actSig){
+    document.getElementById('legb').style.background='linear-gradient(to right,#C7D7F8,#7FA8F0,#3B72E0,#1A44C4,#B91C1C)';
+    document.getElementById('legl').innerHTML='<span>Low</span><span>Risk level</span><span>Critical</span>';
+  } else { resetLegend(); }
+  renderSigs();drawBlocks();
+}
+function resetLegend(){
+  document.getElementById('legb').style.background='linear-gradient(to right,#EDF1FD,#93AAEE,#1A44C4,#B91C1C)';
+  document.getElementById('legl').innerHTML='<span>&lt;8%</span><span>Dropout rate</span><span>&gt;27%</span>';
+}
+function toggleTheme(){
+  isOrange=!isOrange;document.body.classList.toggle('ot',isOrange);
+  document.getElementById('tlbl').textContent=isOrange?'Blue mode':'Orange mode';
+  document.getElementById('tsw').style.background=isOrange?'#B84C14':'#1A44C4';
+  drawBlocks();
+}
+
+/* ── INIT ── */
+renderTabs();renderKPIs();renderSigs();renderList();initMap();renderDetail();
+</script>
+</body>
+</html>
