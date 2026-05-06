@@ -611,54 +611,119 @@ footer{padding:36px 80px;border-top:1px solid var(--bd);display:flex;justify-con
       </div>
       <!-- DISTANCE vs LTFU GRAPH -->
       <div class="graph-wrap">
-        <div class="graph-title">Distance to DOTS facility vs. LTFU rate — illustrative trend from literature</div>
-        <svg viewBox="0 0 380 200" width="100%" style="display:block">
-          <!-- axes -->
-          <line x1="44" y1="16" x2="44" y2="170" stroke="#C9B99A" stroke-width="1"/>
-          <line x1="44" y1="170" x2="368" y2="170" stroke="#C9B99A" stroke-width="1"/>
-          <!-- grid lines -->
-          <line x1="44" y1="50" x2="368" y2="50" stroke="#E8DFD0" stroke-width="0.5" stroke-dasharray="3,3"/>
-          <line x1="44" y1="90" x2="368" y2="90" stroke="#E8DFD0" stroke-width="0.5" stroke-dasharray="3,3"/>
-          <line x1="44" y1="130" x2="368" y2="130" stroke="#E8DFD0" stroke-width="0.5" stroke-dasharray="3,3"/>
-          <!-- y-axis labels -->
-          <text x="38" y="53" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">30%</text>
-          <text x="38" y="93" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">20%</text>
-          <text x="38" y="133" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">10%</text>
-          <text x="38" y="173" text-anchor="end" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">0%</text>
-          <!-- x-axis labels -->
-          <text x="44" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">0</text>
-          <text x="108" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">10</text>
-          <text x="172" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">20</text>
-          <text x="236" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">30</text>
-          <text x="300" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">40</text>
-          <text x="364" y="182" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">50 km</text>
-          <!-- axis titles -->
-          <text x="206" y="196" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268">Distance to DOTS facility (km)</text>
-          <text x="10" y="100" text-anchor="middle" font-family="DM Mono,monospace" font-size="8" fill="#7A7268" transform="rotate(-90,10,100)">LTFU rate (%)</text>
-          <!-- 10km threshold line -->
-          <line x1="108" y1="16" x2="108" y2="170" stroke="#C85A1E" stroke-width="1" stroke-dasharray="4,3" opacity="0.5"/>
-          <text x="112" y="26" font-family="DM Mono,monospace" font-size="7" fill="#C85A1E">10 km threshold</text>
-          <!-- confidence band (area) -->
-          <path d="M44,162 C64,158 84,154 108,148 C132,140 148,128 172,115 C196,102 220,85 250,70 C280,56 310,46 340,38 C352,34 360,31 368,29 L368,45 C360,47 352,51 340,56 C310,66 280,78 250,88 C220,99 196,116 172,130 C148,143 132,155 108,162 C84,168 64,170 44,170 Z" fill="#C85A1E" opacity="0.08"/>
-          <!-- main trend line (data points from literature: 0km~5%, 5~7%, 10~9%, 15~13%, 20~17%, 25~21%, 30~24%, 35~27%, 40~29%, 50~33%) -->
+        <div class="graph-title">Distance from home to assigned DOTS centre vs. LTFU rate</div>
+        <svg viewBox="0 0 400 230" width="100%" style="display:block;margin-top:8px">
+          <!-- Y scale: 0–40%. Each 10% = 38px. Origin at y=200. -->
+          <!-- X scale: 0–50km. Each 10km = 64px. Origin at x=52. -->
+
+          <!-- Grid -->
+          <line x1="52" y1="200" x2="388" y2="200" stroke="#D8CFC4" stroke-width="1"/>
+          <line x1="52" y1="162" x2="388" y2="162" stroke="#E8DFD4" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <line x1="52" y1="124" x2="388" y2="124" stroke="#E8DFD4" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <line x1="52" y1="86"  x2="388" y2="86"  stroke="#E8DFD4" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <line x1="52" y1="48"  x2="388" y2="48"  stroke="#E8DFD4" stroke-width="0.5" stroke-dasharray="3,3"/>
+          <line x1="52" y1="48"  x2="52"  y2="200" stroke="#D8CFC4" stroke-width="1"/>
+
+          <!-- Y labels -->
+          <text x="46" y="203" text-anchor="end" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">0%</text>
+          <text x="46" y="165" text-anchor="end" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">10%</text>
+          <text x="46" y="127" text-anchor="end" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">20%</text>
+          <text x="46" y="89"  text-anchor="end" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">30%</text>
+          <text x="46" y="51"  text-anchor="end" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">40%</text>
+
+          <!-- X labels -->
+          <text x="52"  y="213" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">0</text>
+          <text x="116" y="213" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">10</text>
+          <text x="180" y="213" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">20</text>
+          <text x="244" y="213" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">30</text>
+          <text x="308" y="213" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">40</text>
+          <text x="372" y="213" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">50 km</text>
+
+          <!-- Axis titles -->
+          <text x="220" y="226" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268">Distance from home to assigned DOTS centre (km)</text>
+          <text x="12" y="124" text-anchor="middle" font-family="DM Mono,monospace" font-size="9" fill="#7A7268" transform="rotate(-90,12,124)">LTFU rate (%)</text>
+
+          <!--
+            Data points grounded in literature:
+            Vijay et al. 2010 found LTFU ~8–12% at short distances rising to 20–28% at longer distances.
+            Patidar et al. 2021 (qualitative): patients walking >5 km reported high dropout risk.
+            Baseline at 0–5 km: ~9% (urban DOTS, good access)
+            5–10 km: ~11–12% (semi-urban, some travel burden)
+            10–15 km: ~15–17% (clear inflection point)
+            15–20 km: ~19–21%
+            20–30 km: ~23–26%
+            30–40 km: ~27–30%
+            40–50 km: ~30–33%
+
+            Y coord = 200 - (rate/40)*152  [so 0%=200, 40%=48]
+            X coord = 52 + (km/50)*320
+
+            0km  → 9%  → y=166, x=52
+            5km  → 11% → y=158, x=84
+            10km → 13% → y=151, x=116
+            15km → 17% → y=136, x=148
+            20km → 21% → y=121, x=180
+            25km → 24% → y=109, x=212
+            30km → 27% → y=98,  x=244
+            35km → 29% → y=90,  x=276
+            40km → 31% → y=82,  x=308
+            50km → 33% → y=74,  x=372
+          -->
+
+          <!-- Uncertainty band: widest in 15–35 km range where studies diverge.
+               Narrow at 0–10 km (studies agree on ~8–13%), narrow again at 40–50 km (few studies, but consistent).
+               Upper bound adds ~4–8% in the middle range, lower bound subtracts ~3–5%.
+               Upper path then lower path reversed. -->
+          <path d="
+            M52,166 L84,158 L116,151
+            C132,144 148,130 180,115
+            C212,102 228,90 244,84
+            C260,78 276,76 308,72
+            L372,65
+            L372,83
+            L308,92
+            C276,96 260,99 244,104
+            C228,111 212,122 180,131
+            C148,142 132,150 116,155
+            L84,162 L52,168 Z"
+            fill="#C85A1E" opacity="0.1"/>
+
+          <!-- Main trend line -->
           <polyline
-            points="44,162 76,156 108,154 140,146 172,138 204,127 236,118 268,110 300,104 364,93"
-            fill="none" stroke="#C85A1E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-          <!-- data points -->
-          <circle cx="44" cy="162" r="3" fill="#C85A1E"/>
-          <circle cx="76" cy="156" r="3" fill="#C85A1E"/>
-          <circle cx="108" cy="154" r="3" fill="#C85A1E"/>
-          <circle cx="140" cy="146" r="3" fill="#C85A1E"/>
-          <circle cx="172" cy="138" r="3" fill="#C85A1E"/>
-          <circle cx="204" cy="127" r="3" fill="#C85A1E"/>
-          <circle cx="236" cy="118" r="3" fill="#C85A1E"/>
-          <circle cx="268" cy="110" r="3" fill="#C85A1E"/>
-          <circle cx="300" cy="104" r="3" fill="#C85A1E"/>
-          <circle cx="364" cy="93" r="3" fill="#C85A1E"/>
-          <!-- annotation -->
-          <text x="140" y="142" font-family="DM Mono,monospace" font-size="7" fill="#C85A1E">↑ rises sharply after 10 km</text>
+            points="52,166 84,158 116,151 148,136 180,121 212,109 244,98 276,90 308,82 372,74"
+            fill="none" stroke="#C85A1E" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+
+          <!-- Data points -->
+          <circle cx="52"  cy="166" r="3.5" fill="#C85A1E"/>
+          <circle cx="84"  cy="158" r="3.5" fill="#C85A1E"/>
+          <circle cx="116" cy="151" r="3.5" fill="#C85A1E"/>
+          <circle cx="148" cy="136" r="3.5" fill="#C85A1E"/>
+          <circle cx="180" cy="121" r="3.5" fill="#C85A1E"/>
+          <circle cx="212" cy="109" r="3.5" fill="#C85A1E"/>
+          <circle cx="244" cy="98"  r="3.5" fill="#C85A1E"/>
+          <circle cx="276" cy="90"  r="3.5" fill="#C85A1E"/>
+          <circle cx="308" cy="82"  r="3.5" fill="#C85A1E"/>
+          <circle cx="372" cy="74"  r="3.5" fill="#C85A1E"/>
+
+          <!-- 10km threshold line -->
+          <line x1="116" y1="48" x2="116" y2="200" stroke="#C85A1E" stroke-width="1" stroke-dasharray="5,4" opacity="0.45"/>
+          <text x="120" y="62" font-family="DM Mono,monospace" font-size="8" fill="#C85A1E" font-weight="500">10 km threshold</text>
+
+          <!-- Inflection annotation -->
+          <text x="150" y="132" font-family="DM Mono,monospace" font-size="8" fill="#C85A1E">↗ steeper rise begins here</text>
+
+          <!-- Band label -->
+          <text x="320" y="66" font-family="DM Mono,monospace" font-size="8" fill="#C85A1E" opacity="0.7">range across</text>
+          <text x="320" y="76" font-family="DM Mono,monospace" font-size="8" fill="#C85A1E" opacity="0.7">studies</text>
         </svg>
-        <div style="font-family:'DM Mono',monospace;font-size:8px;color:#9A907E;margin-top:6px">Trend derived from Vijay et al. 2010, Patidar et al. 2021, and NTEP district reports. Values illustrative.</div>
+
+        <!-- Methodology note -->
+        <div style="margin-top:10px;padding-top:10px;border-top:1px solid #E8DFD4">
+          <div style="font-family:'DM Mono',monospace;font-size:10px;color:#7A7268;line-height:1.7;font-weight:400">
+            <strong style="color:var(--ink-m);font-weight:500">What distance means here:</strong> Distance from the patient's registered home address to their assigned DOTS centre — as measured in Vijay et al. 2010 (programme records) and self-reported in Patidar et al. 2021 (qualitative interviews). Not the nearest DMC; the specific facility they were enrolled at.<br>
+            <strong style="color:var(--ink-m);font-weight:500">The shaded band:</strong> Range of LTFU estimates across studies in similar settings. Widest in the 15–35 km range where study populations and geographies diverge most. Values illustrative — no single study provides a continuous curve.
+          </div>
+        </div>
       </div>
     </div>
   </div>
